@@ -19,8 +19,7 @@ public class WordService
         if (words.Count == 0)
             return "Parola";
 
-        var random = new Random();
-        var word = words[random.Next(words.Count)];
+        var word = words[Random.Shared.Next(words.Count)];
         return word.Text;
     }
 
@@ -41,8 +40,7 @@ public class WordService
         if (words.Count == 0)
             return "Parola";
 
-        var random = new Random();
-        var word = words[random.Next(words.Count)];
+        var word = words[Random.Shared.Next(words.Count)];
         return word.Text;
     }
 }

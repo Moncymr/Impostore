@@ -117,8 +117,7 @@ public class GameService
             return false;
 
         // Assign impostor
-        var random = new Random();
-        var impostorIndex = random.Next(approvedPlayers.Count);
+        var impostorIndex = Random.Shared.Next(approvedPlayers.Count);
         var impostor = approvedPlayers[impostorIndex];
         impostor.IsImpostor = true;
         game.ImpostorId = impostor.Id;
@@ -261,6 +260,11 @@ public class GameService
                 game.ImpostorsWon = true;
             }
         }
+        else
+        {
+            // No votes or tie - impostor wins
+            game.ImpostorsWon = true;
+        }
 
         game.State = GameState.Finished;
         await _context.SaveChangesAsync();
@@ -282,8 +286,7 @@ public class GameService
     private string GenerateGameCode()
     {
         const string chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
-        var random = new Random();
         return new string(Enumerable.Repeat(chars, 6)
-            .Select(s => s[random.Next(s.Length)]).ToArray());
+            .Select(s => s[Random.Shared.Next(s.Length)]).ToArray());
     }
 }
