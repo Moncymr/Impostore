@@ -7,8 +7,11 @@ using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Configure Kestrel to listen on Railway's PORT
-var port = Environment.GetEnvironmentVariable("PORT") ?? "5114";
+// Configure Kestrel to listen on Railway's PORT environment variable
+// Falls back to port from configuration if PORT is not set
+var port = Environment.GetEnvironmentVariable("PORT") 
+    ?? builder.Configuration.GetValue<string>("Port") 
+    ?? "5114";
 builder.WebHost.ConfigureKestrel(options =>
 {
     options.Listen(IPAddress.Any, int.Parse(port));
