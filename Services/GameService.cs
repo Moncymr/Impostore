@@ -213,9 +213,19 @@ public class GameService
 
         if (game.CurrentTurnIndex >= approvedPlayers.Count)
         {
-            // All turns completed, but stay in InProgress state
-            // Voting will start when all players are ready or host manually starts it
-            game.CurrentTurnIndex = approvedPlayers.Count; // Mark all turns as done
+            // All players have had a turn, check if everyone is ready to vote
+            var allReady = approvedPlayers.All(p => p.IsReadyToVote);
+            
+            if (!allReady)
+            {
+                // Not everyone is ready, restart the turn cycle from the beginning
+                game.CurrentTurnIndex = 0;
+            }
+            else
+            {
+                // Everyone is ready, mark turns as complete
+                game.CurrentTurnIndex = approvedPlayers.Count;
+            }
         }
 
         await _context.SaveChangesAsync();

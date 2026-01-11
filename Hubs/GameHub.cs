@@ -171,14 +171,25 @@ public class GameHub : Hub
                 var approvedPlayers = game.Players.Where(p => p.IsApproved).ToList();
                 if (game.CurrentTurnIndex >= approvedPlayers.Count)
                 {
-                    await _gameService.AddSystemMessageAsync(gameId, "Tutti i turni completati! Dichiaratevi pronti per votare.");
+                    // All players have had their turn and everyone is ready
+                    await _gameService.AddSystemMessageAsync(gameId, "Tutti pronti! La votazione inizierà presto...");
                 }
                 else
                 {
-                    // Notify all players about whose turn it is
+                    // Check if we're restarting the turn cycle
                     var currentTurnPlayer = approvedPlayers.ElementAtOrDefault(game.CurrentTurnIndex);
                     if (currentTurnPlayer != null)
                     {
+                        // Check if this is the first player and we're cycling
+                        if (game.CurrentTurnIndex == 0)
+                        {
+                            var allHadTurn = approvedPlayers.Any(p => p.IsReadyToVote);
+                            if (allHadTurn)
+                            {
+                                await _gameService.AddSystemMessageAsync(gameId, "Nuovo giro di turni! Non tutti sono pronti a votare.");
+                            }
+                        }
+                        
                         await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
                         await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
                     }
