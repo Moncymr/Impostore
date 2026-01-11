@@ -15,13 +15,13 @@
                 <h2>Inserisci il tuo nickname</h2>
                 <input type="text" 
                        class="form-control" 
-                       @bind="inputNickname" 
-                       @bind:event="oninput"
+                       @oninput="OnNicknameInput"
+                       value="@inputNickname"
                        placeholder="Il tuo nickname..."
                        maxlength="20" />
                 <button class="btn btn-primary btn-lg mt-3" 
                         @onclick="SetNickname"
-                        disabled="@(string.IsNullOrWhiteSpace(inputNickname))">
+                        disabled="@isButtonDisabled">
                     Continua
                 </button>
             </div>
@@ -90,6 +90,7 @@
     private string gameCode = "";
     private string password = "";
     private string errorMessage = "";
+    private bool isButtonDisabled = true;
 
     protected override void OnInitialized()
     {
@@ -99,6 +100,12 @@
         {
             nickname = storedNickname;
         }
+    }
+
+    private void OnNicknameInput(ChangeEventArgs e)
+    {
+        inputNickname = e.Value?.ToString() ?? "";
+        isButtonDisabled = string.IsNullOrWhiteSpace(inputNickname);
     }
 
     private void SetNickname()
