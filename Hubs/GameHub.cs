@@ -37,9 +37,22 @@ public class GameHub : Hub
         var player = game.Players.FirstOrDefault(p => p.Id == playerId);
         if (player == null)
             return;
+        
+        // Find the host player
+        var host = game.Players.FirstOrDefault(p => p.IsHost);
+        if (host == null)
+            return;
             
-        // Notify other players in the game group about the new player (excluding the caller)
-        await Clients.OthersInGroup(gameId).SendAsync("PlayerJoinRequest", player);
+        // Notify only the host about the new player join request
+        if (!string.IsNullOrEmpty(host.ConnectionId))
+        {
+            await Clients.Client(host.ConnectionId).SendAsync("PlayerJoinRequest", player);
+        }
+        else
+        {
+            // Fallback: notify all other players in group if host connection ID not set
+            await Clients.OthersInGroup(gameId).SendAsync("PlayerJoinRequest", player);
+        }
     }
 
     public async Task LeaveGameGroup(string gameId)

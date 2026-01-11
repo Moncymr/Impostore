@@ -171,11 +171,11 @@
                                @bind="messageInput" 
                                @bind:event="oninput"
                                @onkeydown="HandleKeyDown"
-                               placeholder="Scrivi un messaggio..."
-                               disabled="@(game.State == GameState.Finished)" />
+                               placeholder="@GetChatPlaceholder()"
+                               disabled="@(!CanSendMessage())" />
                         <button class="btn btn-primary" 
                                 @onclick="SendMessage"
-                                disabled="@(string.IsNullOrWhiteSpace(messageInput) || game.State == GameState.Finished)">
+                                disabled="@(string.IsNullOrWhiteSpace(messageInput) || !CanSendMessage())">
                             Invia
                         </button>
                     </div>
@@ -372,6 +372,46 @@
             return approvedPlayers[game.CurrentTurnIndex];
         }
         return null;
+    }
+
+    private bool CanSendMessage()
+    {
+        if (game == null || currentPlayer == null)
+            return false;
+
+        // Can't send messages if game is finished
+        if (game.State == GameState.Finished)
+            return false;
+
+        // During turn phase, only the current turn player can send messages
+        if (game.State == GameState.InProgress)
+        {
+            var currentTurnPlayer = GetCurrentTurnPlayer();
+            return currentTurnPlayer?.Id == currentPlayer.Id;
+        }
+
+        // During discussion and voting, everyone can send messages
+        return game.State == GameState.Discussion || game.State == GameState.Voting;
+    }
+
+    private string GetChatPlaceholder()
+    {
+        if (game == null || currentPlayer == null)
+            return "Scrivi un messaggio...";
+
+        if (game.State == GameState.Finished)
+            return "Partita terminata";
+
+        if (game.State == GameState.InProgress)
+        {
+            var currentTurnPlayer = GetCurrentTurnPlayer();
+            if (currentTurnPlayer?.Id == currentPlayer.Id)
+                return "È il tuo turno! Scrivi il tuo messaggio...";
+            else
+                return $"È il turno di {currentTurnPlayer?.Nickname}. Attendi il tuo turno...";
+        }
+
+        return "Scrivi un messaggio...";
     }
 
     private Player? GetPlayerById(string? id)

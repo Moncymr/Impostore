@@ -243,6 +243,7 @@
         if (game != null)
         {
             await hubConnection.SendAsync("JoinGameGroup", game.Id);
+            await hubConnection.SendAsync("UpdatePlayerConnection", playerId, game.Id, true);
         }
     }
 
@@ -273,8 +274,9 @@
 
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection != null)
+        if (hubConnection != null && game != null)
         {
+            await hubConnection.SendAsync("UpdatePlayerConnection", playerId, game.Id, false);
             await hubConnection.DisposeAsync();
         }
     }
