@@ -308,6 +308,16 @@
             await InvokeAsync(StateHasChanged);
         });
 
+        hubConnection.On<string, string>("TurnChanged", async (turnPlayerId, turnPlayerNickname) =>
+        {
+            // Refresh game state to ensure we have the latest turn information
+            if (game != null)
+            {
+                game = await GameService.GetGameByIdAsync(gameId);
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+
         await hubConnection.StartAsync();
         await hubConnection.SendAsync("JoinGameGroup", gameId);
         await hubConnection.SendAsync("UpdatePlayerConnection", playerId, gameId, true);
