@@ -298,7 +298,13 @@
             hasVoted = game.Votes.Any(v => v.VoterId == playerId);
 
             await InitializeSignalR();
+            
+            // After SignalR is initialized, refresh game state to ensure we have latest
+            game = await GameService.GetGameByIdAsync(gameId);
+            currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
+            
             isLoading = false;
+            await InvokeAsync(StateHasChanged);
         }
         catch
         {

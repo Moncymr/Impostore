@@ -243,7 +243,9 @@
         {
             if (!string.IsNullOrEmpty(gameId))
             {
-                Navigation.NavigateTo($"/game?gameId={gameId}&playerId={playerId}");
+                // Small delay to ensure database is fully updated before navigating
+                await Task.Delay(500);
+                Navigation.NavigateTo($"/game?gameId={gameId}&playerId={playerId}", forceLoad: true);
             }
         });
 
