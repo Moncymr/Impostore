@@ -3,8 +3,16 @@ using ImpostoreGame.Data;
 using ImpostoreGame.Services;
 using ImpostoreGame.Hubs;
 using Microsoft.EntityFrameworkCore;
+using System.Net;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configure Kestrel to listen on Railway's PORT
+var port = Environment.GetEnvironmentVariable("PORT") ?? "5114";
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Listen(IPAddress.Any, int.Parse(port));
+});
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -38,7 +46,13 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
-app.UseHttpsRedirection();
+
+// Only use HTTPS redirection in development or when explicitly configured
+// Railway handles HTTPS at the proxy level
+if (app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
 
 app.UseAntiforgery();
 

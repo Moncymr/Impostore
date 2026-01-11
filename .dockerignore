@@ -1,0 +1,12 @@
+**/.git
+**/.gitignore
+**/.vscode
+**/.idea
+**/bin
+**/obj
+**/out
+**/.vs
+**/.DS_Store
+**/node_modules
+**/wwwroot/lib
+**/*.md

@@ -142,6 +142,7 @@ yarn-error.log*
 
 # Published files
 publish/
+out/
 PublishProfiles/
 *.pubxml
 *.publishproj
