@@ -4,7 +4,7 @@
 services:
   - type: web
     name: impostore-game
-    runtime: docker
+    runtime: dotnet
     plan: free
     region: frankfurt  # Change to your preferred region (oregon, frankfurt, singapore)
     buildCommand: dotnet publish -c Release -o out

@@ -46,9 +46,3 @@ Thumbs.db
 *.db
 *.db-shm
 *.db-wal
-
-# Deployment files
-railway.toml
-render.yaml
-Dockerfile
-.dockerignore
