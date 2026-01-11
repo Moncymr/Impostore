@@ -128,18 +128,28 @@ Impostore/
 
 ## 🚢 Deploy
 
-### Azure App Service (Free Tier)
+### ⚠️ Importante: GitHub Pages
+**Impostore NON può essere deployato direttamente su GitHub Pages** perché è un'applicazione Blazor Server che richiede un server .NET attivo e SignalR per il multiplayer in tempo reale.
+
+Tuttavia, è disponibile una **landing page statica** su GitHub Pages che serve come vetrina del progetto:
+- 🌐 **Landing Page**: [https://moncymr.github.io/Impostore/](https://moncymr.github.io/Impostore/)
+- La landing page è nella cartella `/docs`
+- Deploy automatico tramite GitHub Actions
+
+### Opzioni di Deploy per l'App Completa
+
+#### Azure App Service (Free Tier)
 ```bash
 # Pubblica su Azure
 az webapp up --name impostore-game --resource-group myResourceGroup
 ```
 
-### Railway
+#### Railway
 1. Connetti il repository GitHub
 2. Railway rileverà automaticamente il progetto .NET
 3. Deploy automatico ad ogni push
 
-### Render
+#### Render
 1. Crea un nuovo Web Service
 2. Connetti il repository
 3. Build Command: `dotnet build`
