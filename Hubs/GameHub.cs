@@ -38,8 +38,8 @@ public class GameHub : Hub
         if (player == null)
             return;
             
-        // Notify all players in the game group about the new player
-        await Clients.Group(gameId).SendAsync("PlayerJoinRequest", player);
+        // Notify other players in the game group about the new player (excluding the caller)
+        await Clients.OthersInGroup(gameId).SendAsync("PlayerJoinRequest", player);
     }
 
     public async Task LeaveGameGroup(string gameId)
