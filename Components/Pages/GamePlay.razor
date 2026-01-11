@@ -386,6 +386,10 @@
                 // No messages allowed in lobby (should not reach here from gameplay page)
                 return false;
             
+            case GameState.Starting:
+                // No messages allowed during game initialization
+                return false;
+            
             case GameState.InProgress:
                 // During InProgress state (turn-based phase), only the current turn player can send messages
                 var currentTurnPlayer = GetCurrentTurnPlayer();
@@ -415,6 +419,9 @@
         {
             case GameState.Lobby:
                 return "Attendi l'inizio della partita...";
+            
+            case GameState.Starting:
+                return "La partita sta iniziando...";
             
             case GameState.InProgress:
                 var currentTurnPlayer = GetCurrentTurnPlayer();
