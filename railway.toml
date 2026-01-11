@@ -1,0 +1,20 @@
+# Railway Configuration for Impostore Game
+# This file configures how Railway builds and deploys the application
+
+[build]
+builder = "nixpacks"
+buildCommand = "dotnet publish -c Release -o out"
+
+[deploy]
+startCommand = "dotnet out/ImpostoreGame.dll"
+restartPolicyType = "on_failure"
+restartPolicyMaxRetries = 10
+
+# Health check configuration
+healthcheckPath = "/"
+healthcheckTimeout = 100
+
+# Automatically restart the service if it crashes
+[deploy.restartPolicy]
+type = "on_failure"
+maxRetries = 10

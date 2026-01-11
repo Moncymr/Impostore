@@ -1,0 +1,18 @@
+# Render Blueprint for Impostore Game
+# This file allows one-click deployment to Render
+
+services:
+  - type: web
+    name: impostore-game
+    runtime: docker
+    plan: free
+    region: frankfurt  # Change to your preferred region (oregon, frankfurt, singapore)
+    buildCommand: dotnet publish -c Release -o out
+    startCommand: cd out && dotnet ImpostoreGame.dll --urls http://0.0.0.0:$PORT
+    envVars:
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production
+      - key: ASPNETCORE_URLS
+        value: http://0.0.0.0:$PORT
+    healthCheckPath: /
+    autoDeploy: true  # Automatically deploy when pushing to the main branch

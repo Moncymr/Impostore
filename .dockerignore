@@ -1,0 +1,54 @@
+# Docker ignore file for Impostore
+# Excludes unnecessary files from Docker builds
+
+# Git
+.git
+.gitignore
+.gitattributes
+
+# Documentation
+*.md
+LICENSE
+.github
+
+# Build artifacts
+bin/
+obj/
+out/
+publish/
+[Dd]ebug/
+[Rr]elease/
+
+# IDE
+.vs/
+.vscode/
+.idea/
+*.user
+*.suo
+
+# Logs
+*.log
+logs/
+
+# Dependencies
+node_modules/
+wwwroot/lib/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Temporary files
+*.tmp
+*.temp
+
+# Database files (if any)
+*.db
+*.db-shm
+*.db-wal
+
+# Deployment files
+railway.toml
+render.yaml
+Dockerfile
+.dockerignore

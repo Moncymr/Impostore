@@ -126,24 +126,29 @@ Impostore/
 ### Lobby (Mobile)
 ![Lobby Mobile](https://github.com/user-attachments/assets/39c009a7-8c6a-4b1c-abbd-c6c9f07c075e)
 
-## 🚢 Deploy
+## 🚢 Deploy - Pubblica Online GRATIS
 
-### Azure App Service (Free Tier)
-```bash
-# Pubblica su Azure
-az webapp up --name impostore-game --resource-group myResourceGroup
-```
+**🎉 Vuoi pubblicare il tuo sito online gratuitamente?**
 
-### Railway
-1. Connetti il repository GitHub
-2. Railway rileverà automaticamente il progetto .NET
-3. Deploy automatico ad ogni push
+👉 **[Leggi la Guida Completa al Deployment](DEPLOYMENT.md)** 👈
 
-### Render
-1. Crea un nuovo Web Service
-2. Connetti il repository
-3. Build Command: `dotnet build`
-4. Start Command: `dotnet run`
+La guida include istruzioni dettagliate passo-passo per:
+
+- 🏆 **Railway** (CONSIGLIATO - $5/mese gratis, setup automatico)
+- ⭐ **Render** (750 ore/mese gratuite)
+- ☁️ **Azure App Service** (Tier F1 gratuito)
+
+### Quick Start - Railway (2 minuti)
+
+1. Vai su [railway.app](https://railway.app) e registrati con GitHub
+2. Clicca su "New Project" → "Deploy from GitHub repo"
+3. Seleziona il repository Impostore
+4. Railway farà automaticamente il build e deploy!
+5. Clicca su "Generate Domain" per ottenere l'URL pubblico
+
+**✅ Fatto! Il tuo gioco è online e accessibile a tutti!**
+
+📖 Per istruzioni dettagliate e altre opzioni, vedi [DEPLOYMENT.md](DEPLOYMENT.md)
 
 ## 📝 Note Tecniche
 
