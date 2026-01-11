@@ -78,8 +78,18 @@ public class GameHub : Hub
 
         await Groups.AddToGroupAsync(Context.ConnectionId, game.Id);
         
-        // Notify host about join request
-        await Clients.Group(game.Id).SendAsync("PlayerJoinRequest", player);
+        // Find the host and notify only them about the join request
+        var host = game.Players.FirstOrDefault(p => p.IsHost);
+        if (host != null && !string.IsNullOrEmpty(host.ConnectionId))
+        {
+            await Clients.Client(host.ConnectionId).SendAsync("PlayerJoinRequest", player);
+        }
+        else
+        {
+            // Fallback: notify all other players in group if host connection ID not set
+            await Clients.OthersInGroup(game.Id).SendAsync("PlayerJoinRequest", player);
+        }
+        
         await Clients.Caller.SendAsync("JoinRequestSent", game.Id);
     }
 

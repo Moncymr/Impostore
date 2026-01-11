@@ -379,19 +379,31 @@
         if (game == null || currentPlayer == null)
             return false;
 
-        // Can't send messages if game is finished
-        if (game.State == GameState.Finished)
-            return false;
-
-        // During turn phase, only the current turn player can send messages
-        if (game.State == GameState.InProgress)
+        // Handle each game state explicitly
+        switch (game.State)
         {
-            var currentTurnPlayer = GetCurrentTurnPlayer();
-            return currentTurnPlayer?.Id == currentPlayer.Id;
+            case GameState.Lobby:
+                // No messages allowed in lobby (should not reach here from gameplay page)
+                return false;
+            
+            case GameState.InProgress:
+                // During InProgress state (turn-based phase), only the current turn player can send messages
+                var currentTurnPlayer = GetCurrentTurnPlayer();
+                return currentTurnPlayer?.Id == currentPlayer.Id;
+            
+            case GameState.Discussion:
+            case GameState.Voting:
+                // During discussion and voting phases, everyone can send messages
+                return true;
+            
+            case GameState.Finished:
+                // No messages allowed when game is finished
+                return false;
+            
+            default:
+                // Unknown state - disallow messages for safety
+                return false;
         }
-
-        // During discussion and voting, everyone can send messages
-        return game.State == GameState.Discussion || game.State == GameState.Voting;
     }
 
     private string GetChatPlaceholder()
@@ -399,19 +411,30 @@
         if (game == null || currentPlayer == null)
             return "Scrivi un messaggio...";
 
-        if (game.State == GameState.Finished)
-            return "Partita terminata";
-
-        if (game.State == GameState.InProgress)
+        switch (game.State)
         {
-            var currentTurnPlayer = GetCurrentTurnPlayer();
-            if (currentTurnPlayer?.Id == currentPlayer.Id)
-                return "È il tuo turno! Scrivi il tuo messaggio...";
-            else
-                return $"È il turno di {currentTurnPlayer?.Nickname}. Attendi il tuo turno...";
+            case GameState.Lobby:
+                return "Attendi l'inizio della partita...";
+            
+            case GameState.InProgress:
+                var currentTurnPlayer = GetCurrentTurnPlayer();
+                if (currentTurnPlayer?.Id == currentPlayer.Id)
+                    return "È il tuo turno! Scrivi il tuo messaggio...";
+                else
+                    return $"È il turno di {currentTurnPlayer?.Nickname}. Attendi il tuo turno...";
+            
+            case GameState.Discussion:
+                return "Discuti liberamente con gli altri giocatori...";
+            
+            case GameState.Voting:
+                return "Scrivi un messaggio...";
+            
+            case GameState.Finished:
+                return "Partita terminata";
+            
+            default:
+                return "Scrivi un messaggio...";
         }
-
-        return "Scrivi un messaggio...";
     }
 
     private Player? GetPlayerById(string? id)
