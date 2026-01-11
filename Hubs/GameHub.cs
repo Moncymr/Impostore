@@ -83,12 +83,8 @@ public class GameHub : Hub
         {
             await Clients.Client(host.ConnectionId).SendAsync("PlayerJoinRequest", player);
         }
-        else
-        {
-            // Fallback: notify other players in group (excluding the joining player) if host ConnectionId not set
-            // This excludes the joining player to avoid the duplicate notification issue
-            await Clients.OthersInGroup(gameId).SendAsync("PlayerJoinRequest", player);
-        }
+        // Note: If host ConnectionId is not set, we skip the notification
+        // The host will see the player when they refresh or when the player is approved
     }
 
     public async Task ApprovePlayer(string gameId, string playerId)

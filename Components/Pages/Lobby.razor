@@ -114,6 +114,7 @@
     private Player? currentPlayer;
     private string nickname = "";
     private string playerId = Guid.NewGuid().ToString();
+    private string gameId = "";
     private bool isHost = false;
     private bool isLoading = true;
     private string errorMessage = "";
@@ -139,6 +140,7 @@
             if (createGame)
             {
                 game = await GameService.CreateGameAsync(playerId, nickname);
+                gameId = game.Id;
                 isHost = true;
                 currentPlayer = game.Players.First();
             }
@@ -152,6 +154,7 @@
                     return;
                 }
                 
+                gameId = game.Id;
                 currentPlayer = await GameService.AddPlayerToGameAsync(game.Id, playerId, nickname);
                 if (currentPlayer == null)
                 {
@@ -171,10 +174,10 @@
 
             await InitializeSignalR();
             
-            // Notify all players in the game group about the new player joining
-            if (!isHost && hubConnection != null && currentPlayer != null && game != null)
+            // Notify the host about the new player joining
+            if (!isHost && hubConnection != null && currentPlayer != null && !string.IsNullOrEmpty(gameId))
             {
-                await hubConnection.SendAsync("NotifyPlayerJoined", game.Id, playerId, nickname);
+                await hubConnection.SendAsync("NotifyPlayerJoined", gameId, playerId, nickname);
             }
             
             isLoading = false;
@@ -195,18 +198,18 @@
 
         hubConnection.On<Player>("PlayerJoinRequest", async (player) =>
         {
-            if (game != null)
+            if (!string.IsNullOrEmpty(gameId))
             {
-                game = await GameService.GetGameByIdAsync(game.Id);
+                game = await GameService.GetGameByIdAsync(gameId);
                 await InvokeAsync(StateHasChanged);
             }
         });
 
         hubConnection.On<string>("PlayerApproved", async (approvedPlayerId) =>
         {
-            if (game != null)
+            if (!string.IsNullOrEmpty(gameId))
             {
-                game = await GameService.GetGameByIdAsync(game.Id);
+                game = await GameService.GetGameByIdAsync(gameId);
                 if (approvedPlayerId == playerId)
                 {
                     statusMessage = "Sei stato approvato dall'host!";
@@ -226,9 +229,9 @@
 
         hubConnection.On<Game>("GameStarted", async (updatedGame) =>
         {
-            if (game != null)
+            if (!string.IsNullOrEmpty(gameId))
             {
-                Navigation.NavigateTo($"/game?gameId={game.Id}&playerId={playerId}");
+                Navigation.NavigateTo($"/game?gameId={gameId}&playerId={playerId}");
             }
         });
 
@@ -240,43 +243,57 @@
 
         await hubConnection.StartAsync();
         
-        if (game != null)
+        if (!string.IsNullOrEmpty(gameId))
         {
-            await hubConnection.SendAsync("JoinGameGroup", game.Id);
-            await hubConnection.SendAsync("UpdatePlayerConnection", playerId, game.Id, true);
+            await hubConnection.SendAsync("JoinGameGroup", gameId);
+            await hubConnection.SendAsync("UpdatePlayerConnection", playerId, gameId, true);
         }
     }
 
     private async Task ApprovePlayer(string playerIdToApprove)
     {
-        if (hubConnection != null && game != null)
+        if (hubConnection != null && !string.IsNullOrEmpty(gameId))
         {
-            await hubConnection.SendAsync("ApprovePlayer", game.Id, playerIdToApprove);
+            await hubConnection.SendAsync("ApprovePlayer", gameId, playerIdToApprove);
         }
     }
 
     private async Task RejectPlayer(string playerIdToReject)
     {
-        if (hubConnection != null && game != null)
+        if (hubConnection != null && !string.IsNullOrEmpty(gameId))
         {
-            await hubConnection.SendAsync("RejectPlayer", game.Id, playerIdToReject);
-            game = await GameService.GetGameByIdAsync(game.Id);
+            await hubConnection.SendAsync("RejectPlayer", gameId, playerIdToReject);
+            game = await GameService.GetGameByIdAsync(gameId);
         }
     }
 
     private async Task StartGame()
     {
-        if (hubConnection != null && game != null)
+        if (hubConnection != null && !string.IsNullOrEmpty(gameId))
         {
-            await hubConnection.SendAsync("StartGame", game.Id);
+            await hubConnection.SendAsync("StartGame", gameId);
         }
     }
 
     public async ValueTask DisposeAsync()
     {
-        if (hubConnection != null && game != null)
+        if (hubConnection != null && !string.IsNullOrEmpty(gameId))
         {
-            await hubConnection.SendAsync("UpdatePlayerConnection", playerId, game.Id, false);
+            try
+            {
+                await hubConnection.SendAsync("UpdatePlayerConnection", playerId, gameId, false);
+            }
+            catch
+            {
+                // Ignore errors during disposal
+            }
+            finally
+            {
+                await hubConnection.DisposeAsync();
+            }
+        }
+        else if (hubConnection != null)
+        {
             await hubConnection.DisposeAsync();
         }
     }
