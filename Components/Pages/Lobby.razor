@@ -36,7 +36,7 @@
             </div>
 
             <div class="players-section">
-                <h3>👥 Giocatori (@approvedPlayers.Count)</h3>
+                <h3>👥 Giocatori (@(approvedPlayers.Count + pendingPlayers.Count))</h3>
                 <div class="players-list">
                     @foreach (var player in approvedPlayers)
                     {
@@ -48,18 +48,13 @@
                             }
                         </div>
                     }
-                </div>
-            </div>
-
-            @if (isHost && pendingPlayers.Any())
-            {
-                <div class="pending-section">
-                    <h3>⏳ Richieste in Attesa</h3>
-                    <div class="players-list">
-                        @foreach (var player in pendingPlayers)
-                        {
-                            <div class="player-item pending">
-                                <span class="player-name">@player.Nickname</span>
+                    @foreach (var player in pendingPlayers)
+                    {
+                        <div class="player-item pending">
+                            <span class="player-name">@player.Nickname</span>
+                            <span class="badge">In Attesa</span>
+                            @if (isHost)
+                            {
                                 <div class="actions">
                                     <button class="btn btn-sm btn-success" @onclick="() => ApprovePlayer(player.Id)">
                                         ✓ Accetta
@@ -68,11 +63,11 @@
                                         ✗ Rifiuta
                                     </button>
                                 </div>
-                            </div>
-                        }
-                    </div>
+                            }
+                        </div>
+                    }
                 </div>
-            }
+            </div>
 
             @if (!string.IsNullOrEmpty(statusMessage))
             {
