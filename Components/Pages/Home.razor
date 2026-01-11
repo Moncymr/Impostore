@@ -106,6 +106,7 @@
     {
         inputNickname = e.Value?.ToString() ?? "";
         isButtonDisabled = string.IsNullOrWhiteSpace(inputNickname);
+        StateHasChanged();
     }
 
     private void SetNickname()
