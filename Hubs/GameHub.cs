@@ -56,7 +56,7 @@ public class GameHub : Hub
             return;
         }
 
-        var player = await _gameService.AddPlayerToGameAsync(game.Id, playerId, nickname);
+        var (player, isNewPlayer) = await _gameService.AddPlayerToGameAsync(game.Id, playerId, nickname);
         if (player == null)
         {
             await Clients.Caller.SendAsync("JoinRequestFailed", "Impossibile unirsi alla partita");
@@ -65,8 +65,11 @@ public class GameHub : Hub
 
         await Groups.AddToGroupAsync(Context.ConnectionId, game.Id);
         
-        // Notify the host about the new player join request
-        await NotifyHostAboutPlayerJoin(game, game.Id, player);
+        // Notify the host about the new player join request (only if truly new)
+        if (isNewPlayer)
+        {
+            await NotifyHostAboutPlayerJoin(game, game.Id, player);
+        }
         
         await Clients.Caller.SendAsync("JoinRequestSent", game.Id);
     }

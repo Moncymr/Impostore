@@ -58,16 +58,25 @@ public class GameService
             .FirstOrDefaultAsync(g => g.Id == gameId);
     }
 
-    public async Task<Player?> AddPlayerToGameAsync(string gameId, string playerId, string nickname)
+    public async Task<(Player? player, bool isNewPlayer)> AddPlayerToGameAsync(string gameId, string playerId, string nickname)
     {
         var game = await GetGameByIdAsync(gameId);
         if (game == null || game.State != GameState.Lobby)
-            return null;
+            return (null, false);
 
-        // Check if player already exists in this game
+        // Check if player already exists by ID
         var existingPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
         if (existingPlayer != null)
-            return existingPlayer;
+            return (existingPlayer, false);
+
+        // Check if a player with the same nickname already exists (prevent duplicates)
+        var existingPlayerByNickname = game.Players.FirstOrDefault(p => 
+            p.Nickname.Equals(nickname, StringComparison.OrdinalIgnoreCase));
+        if (existingPlayerByNickname != null)
+        {
+            // Return the existing player instead of creating a duplicate
+            return (existingPlayerByNickname, false);
+        }
 
         var player = new Player
         {
@@ -79,8 +88,8 @@ public class GameService
 
         game.Players.Add(player);
         await _context.SaveChangesAsync();
-
-        return player;
+        
+        return (player, true);
     }
 
     public async Task<bool> ApprovePlayerAsync(string gameId, string playerId)

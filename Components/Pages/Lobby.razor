@@ -156,7 +156,9 @@
                 }
                 
                 gameId = game.Id;
-                currentPlayer = await GameService.AddPlayerToGameAsync(game.Id, playerId, nickname);
+                var (player, isNewPlayer) = await GameService.AddPlayerToGameAsync(game.Id, playerId, nickname);
+                currentPlayer = player;
+                
                 if (currentPlayer == null)
                 {
                     errorMessage = "Impossibile unirsi alla partita";
@@ -164,7 +166,19 @@
                     return;
                 }
                 
+                // Use the returned player's ID (in case an existing player was returned)
+                playerId = currentPlayer.Id;
+                
                 game = await GameService.GetGameByIdAsync(game.Id);
+                
+                // Store whether this is a new player to avoid duplicate notifications
+                await InitializeSignalR();
+                
+                // Notify the host about the new player joining (only if this is a truly new player)
+                if (!isHost && hubConnection != null && currentPlayer != null && !string.IsNullOrEmpty(gameId) && isNewPlayer)
+                {
+                    await hubConnection.SendAsync("NotifyPlayerJoined", gameId, playerId, nickname);
+                }
             }
             else
             {
@@ -173,12 +187,9 @@
                 return;
             }
 
-            await InitializeSignalR();
-            
-            // Notify the host about the new player joining
-            if (!isHost && hubConnection != null && currentPlayer != null && !string.IsNullOrEmpty(gameId))
+            if (isHost)
             {
-                await hubConnection.SendAsync("NotifyPlayerJoined", gameId, playerId, nickname);
+                await InitializeSignalR();
             }
             
             isLoading = false;
