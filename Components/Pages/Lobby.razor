@@ -1,0 +1,274 @@
+@page "/lobby"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject GameService GameService
+@implements IAsyncDisposable
+
+<PageTitle>Lobby - Impostore</PageTitle>
+
+<div class="lobby-container">
+    @if (isLoading)
+    {
+        <div class="loading">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Caricamento...</span>
+            </div>
+            <p>Caricamento...</p>
+        </div>
+    }
+    else if (game == null)
+    {
+        <div class="error-container">
+            <h2>⚠️ Errore</h2>
+            <p>@errorMessage</p>
+            <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/")'>
+                Torna alla Home
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="lobby-card">
+            <h1>🎮 Lobby Partita</h1>
+            <div class="game-code">
+                <h2>Codice: <span class="code">@game.Code</span></h2>
+                <p class="code-info">Condividi questo codice con i tuoi amici!</p>
+            </div>
+
+            <div class="players-section">
+                <h3>👥 Giocatori (@approvedPlayers.Count)</h3>
+                <div class="players-list">
+                    @foreach (var player in approvedPlayers)
+                    {
+                        <div class="player-item approved">
+                            <span class="player-name">@player.Nickname</span>
+                            @if (player.IsHost)
+                            {
+                                <span class="badge">Host</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+
+            @if (isHost && pendingPlayers.Any())
+            {
+                <div class="pending-section">
+                    <h3>⏳ Richieste in Attesa</h3>
+                    <div class="players-list">
+                        @foreach (var player in pendingPlayers)
+                        {
+                            <div class="player-item pending">
+                                <span class="player-name">@player.Nickname</span>
+                                <div class="actions">
+                                    <button class="btn btn-sm btn-success" @onclick="() => ApprovePlayer(player.Id)">
+                                        ✓ Accetta
+                                    </button>
+                                    <button class="btn btn-sm btn-danger" @onclick="() => RejectPlayer(player.Id)">
+                                        ✗ Rifiuta
+                                    </button>
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+            @if (!string.IsNullOrEmpty(statusMessage))
+            {
+                <div class="alert alert-info">@statusMessage</div>
+            }
+
+            <div class="lobby-actions">
+                @if (isHost)
+                {
+                    <button class="btn btn-success btn-lg" 
+                            @onclick="StartGame"
+                            disabled="@(approvedPlayers.Count < 3)">
+                        🚀 Inizia Partita
+                    </button>
+                    @if (approvedPlayers.Count < 3)
+                    {
+                        <p class="text-muted mt-2">Minimo 3 giocatori per iniziare</p>
+                    }
+                }
+                else
+                {
+                    @if (!currentPlayer?.IsApproved ?? false)
+                    {
+                        <p class="waiting-approval">In attesa di approvazione dall'host...</p>
+                    }
+                    else
+                    {
+                        <p class="waiting-start">In attesa che l'host inizi la partita...</p>
+                    }
+                }
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private HubConnection? hubConnection;
+    private Game? game;
+    private Player? currentPlayer;
+    private string nickname = "";
+    private string playerId = Guid.NewGuid().ToString();
+    private bool isHost = false;
+    private bool isLoading = true;
+    private string errorMessage = "";
+    private string statusMessage = "";
+
+    private List<Player> approvedPlayers => game?.Players.Where(p => p.IsApproved).ToList() ?? new();
+    private List<Player> pendingPlayers => game?.Players.Where(p => !p.IsApproved).ToList() ?? new();
+
+    protected override async Task OnInitializedAsync()
+    {
+        nickname = Navigation.GetQueryParameter("nickname") ?? "";
+        var createGame = Navigation.GetQueryParameter("create") == "true";
+        var gameCode = Navigation.GetQueryParameter("code");
+
+        if (string.IsNullOrEmpty(nickname))
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        try
+        {
+            if (createGame)
+            {
+                game = await GameService.CreateGameAsync(playerId, nickname);
+                isHost = true;
+                currentPlayer = game.Players.First();
+            }
+            else if (!string.IsNullOrEmpty(gameCode))
+            {
+                game = await GameService.GetGameByCodeAsync(gameCode);
+                if (game == null)
+                {
+                    errorMessage = "Partita non trovata";
+                    isLoading = false;
+                    return;
+                }
+                
+                currentPlayer = await GameService.AddPlayerToGameAsync(game.Id, playerId, nickname);
+                if (currentPlayer == null)
+                {
+                    errorMessage = "Impossibile unirsi alla partita";
+                    isLoading = false;
+                    return;
+                }
+                
+                game = await GameService.GetGameByIdAsync(game.Id);
+            }
+            else
+            {
+                errorMessage = "Parametri mancanti";
+                isLoading = false;
+                return;
+            }
+
+            await InitializeSignalR();
+            isLoading = false;
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore: {ex.Message}";
+            isLoading = false;
+        }
+    }
+
+    private async Task InitializeSignalR()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/gamehub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<Player>("PlayerJoinRequest", async (player) =>
+        {
+            if (game != null)
+            {
+                game = await GameService.GetGameByIdAsync(game.Id);
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+
+        hubConnection.On<string>("PlayerApproved", async (approvedPlayerId) =>
+        {
+            if (game != null)
+            {
+                game = await GameService.GetGameByIdAsync(game.Id);
+                if (approvedPlayerId == playerId)
+                {
+                    statusMessage = "Sei stato approvato dall'host!";
+                }
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+
+        hubConnection.On<string>("PlayerRejected", async (rejectedPlayerId) =>
+        {
+            if (rejectedPlayerId == playerId)
+            {
+                errorMessage = "La tua richiesta è stata rifiutata";
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+
+        hubConnection.On<Game>("GameStarted", async (updatedGame) =>
+        {
+            if (game != null)
+            {
+                Navigation.NavigateTo($"/game?gameId={game.Id}&playerId={playerId}");
+            }
+        });
+
+        hubConnection.On<Game>("GameUpdated", async (updatedGame) =>
+        {
+            game = updatedGame;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+        
+        if (game != null)
+        {
+            await hubConnection.SendAsync("JoinGameGroup", game.Id);
+        }
+    }
+
+    private async Task ApprovePlayer(string playerIdToApprove)
+    {
+        if (hubConnection != null && game != null)
+        {
+            await hubConnection.SendAsync("ApprovePlayer", game.Id, playerIdToApprove);
+        }
+    }
+
+    private async Task RejectPlayer(string playerIdToReject)
+    {
+        if (hubConnection != null && game != null)
+        {
+            await hubConnection.SendAsync("RejectPlayer", game.Id, playerIdToReject);
+            game = await GameService.GetGameByIdAsync(game.Id);
+        }
+    }
+
+    private async Task StartGame()
+    {
+        if (hubConnection != null && game != null)
+        {
+            await hubConnection.SendAsync("StartGame", game.Id);
+        }
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.DisposeAsync();
+        }
+    }
+}

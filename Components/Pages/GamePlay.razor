@@ -1,0 +1,396 @@
+@page "/game"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+@inject GameService GameService
+@implements IAsyncDisposable
+
+<PageTitle>Partita - Impostore</PageTitle>
+
+<div class="game-container">
+    @if (isLoading)
+    {
+        <div class="loading">
+            <div class="spinner-border" role="status">
+                <span class="visually-hidden">Caricamento...</span>
+            </div>
+            <p>Caricamento partita...</p>
+        </div>
+    }
+    else if (game == null || currentPlayer == null)
+    {
+        <div class="error-container">
+            <h2>⚠️ Errore</h2>
+            <p>Partita non trovata</p>
+            <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/")'>
+                Torna alla Home
+            </button>
+        </div>
+    }
+    else
+    {
+        <div class="game-layout">
+            <div class="game-header">
+                <h1>🎭 Impostore</h1>
+                <div class="game-info">
+                    <span class="game-code">Codice: @game.Code</span>
+                    <span class="game-state">@GetStateLabel()</span>
+                </div>
+            </div>
+
+            <div class="game-main">
+                <div class="game-content">
+                    @if (game.State == GameState.InProgress || game.State == GameState.Discussion || game.State == GameState.Voting)
+                    {
+                        <div class="secret-card">
+                            @if (currentPlayer.IsImpostor)
+                            {
+                                <div class="impostor-card">
+                                    <h2>🎭 SEI L'IMPOSTORE!</h2>
+                                    <p>Non conosci la parola segreta. Cerca di non farti scoprire!</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="word-card">
+                                    <h2>🔑 La Parola Segreta è:</h2>
+                                    <h1 class="secret-word">@game.SecretWord</h1>
+                                    <p>Non dire la parola esatta, ma dai indizi!</p>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    @if (game.State == GameState.InProgress)
+                    {
+                        <div class="turn-section">
+                            <h3>Fase Turni</h3>
+                            <p>È il turno di: <strong>@GetCurrentTurnPlayer()?.Nickname</strong></p>
+                            @if (isHost)
+                            {
+                                <button class="btn btn-primary" @onclick="NextTurn">
+                                    Turno Successivo
+                                </button>
+                                <button class="btn btn-warning ms-2" @onclick="StartDiscussion">
+                                    Passa alla Discussione
+                                </button>
+                            }
+                        </div>
+                    }
+
+                    @if (game.State == GameState.Discussion)
+                    {
+                        <div class="discussion-section">
+                            <h3>💬 Fase Discussione</h3>
+                            <p>Discutete liberamente chi potrebbe essere l'impostore!</p>
+                            @if (isHost)
+                            {
+                                <button class="btn btn-success" @onclick="StartVoting">
+                                    Inizia Votazione
+                                </button>
+                            }
+                        </div>
+                    }
+
+                    @if (game.State == GameState.Voting)
+                    {
+                        <div class="voting-section">
+                            <h3>🗳️ Votazione</h3>
+                            @if (!hasVoted)
+                            {
+                                <p>Vota chi pensi sia l'impostore:</p>
+                                <div class="voting-list">
+                                    @foreach (var player in game.Players.Where(p => p.IsApproved && p.Id != currentPlayer.Id))
+                                    {
+                                        <button class="btn btn-outline-primary vote-btn" 
+                                                @onclick="() => CastVote(player.Id)">
+                                            @player.Nickname
+                                        </button>
+                                    }
+                                </div>
+                            }
+                            else
+                            {
+                                <p class="voted-message">✓ Hai votato! In attesa degli altri...</p>
+                                <p>Voti ricevuti: @game.Votes.Count / @game.Players.Count(p => p.IsApproved)</p>
+                            }
+                        </div>
+                    }
+
+                    @if (game.State == GameState.Finished)
+                    {
+                        <div class="results-section">
+                            <h2>🏆 Partita Finita!</h2>
+                            @if (game.ImpostorsWon)
+                            {
+                                <div class="impostor-wins">
+                                    <h3>L'Impostore Ha Vinto!</h3>
+                                    <p>L'impostore era: <strong>@GetPlayerById(game.ImpostorId)?.Nickname</strong></p>
+                                    <p>La parola segreta era: <strong>@game.SecretWord</strong></p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="players-win">
+                                    <h3>I Giocatori Hanno Vinto!</h3>
+                                    <p>L'impostore era: <strong>@GetPlayerById(game.ImpostorId)?.Nickname</strong></p>
+                                    <p>Giocatore più votato: <strong>@GetPlayerById(game.WinnerId)?.Nickname</strong></p>
+                                    <p>La parola segreta era: <strong>@game.SecretWord</strong></p>
+                                </div>
+                            }
+                            <button class="btn btn-primary mt-3" @onclick='() => Navigation.NavigateTo("/")'>
+                                Torna alla Home
+                            </button>
+                        </div>
+                    }
+                </div>
+
+                <div class="chat-section">
+                    <div class="chat-header">
+                        <h3>💬 Chat</h3>
+                    </div>
+                    <div class="chat-messages" @ref="chatContainer">
+                        @foreach (var message in game.Messages.OrderBy(m => m.Timestamp))
+                        {
+                            <div class="chat-message @(message.IsSystemMessage ? "system" : "")">
+                                <span class="message-author">@message.PlayerName:</span>
+                                <span class="message-text">@message.Message</span>
+                                <span class="message-time">@message.Timestamp.ToString("HH:mm")</span>
+                            </div>
+                        }
+                    </div>
+                    <div class="chat-input">
+                        <input type="text" 
+                               class="form-control" 
+                               @bind="messageInput" 
+                               @bind:event="oninput"
+                               @onkeydown="HandleKeyDown"
+                               placeholder="Scrivi un messaggio..."
+                               disabled="@(game.State == GameState.Finished)" />
+                        <button class="btn btn-primary" 
+                                @onclick="SendMessage"
+                                disabled="@(string.IsNullOrWhiteSpace(messageInput) || game.State == GameState.Finished)">
+                            Invia
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="players-sidebar">
+                <h3>👥 Giocatori (@game.Players.Count(p => p.IsApproved))</h3>
+                <div class="players-list">
+                    @foreach (var player in game.Players.Where(p => p.IsApproved))
+                    {
+                        <div class="player-item @(player.Id == currentPlayer.Id ? "current" : "")">
+                            <span class="player-name">@player.Nickname</span>
+                            @if (player.IsHost)
+                            {
+                                <span class="badge host">Host</span>
+                            }
+                            @if (game.State == GameState.Finished && player.Id == game.ImpostorId)
+                            {
+                                <span class="badge impostor">Impostore</span>
+                            }
+                        </div>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+</div>
+
+@code {
+    private HubConnection? hubConnection;
+    private Game? game;
+    private Player? currentPlayer;
+    private string gameId = "";
+    private string playerId = "";
+    private bool isHost = false;
+    private bool isLoading = true;
+    private string messageInput = "";
+    private bool hasVoted = false;
+    private ElementReference chatContainer;
+
+    protected override async Task OnInitializedAsync()
+    {
+        gameId = Navigation.GetQueryParameter("gameId") ?? "";
+        playerId = Navigation.GetQueryParameter("playerId") ?? "";
+
+        if (string.IsNullOrEmpty(gameId) || string.IsNullOrEmpty(playerId))
+        {
+            Navigation.NavigateTo("/");
+            return;
+        }
+
+        try
+        {
+            game = await GameService.GetGameByIdAsync(gameId);
+            if (game == null)
+            {
+                isLoading = false;
+                return;
+            }
+
+            currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
+            if (currentPlayer == null)
+            {
+                isLoading = false;
+                return;
+            }
+
+            isHost = currentPlayer.IsHost;
+            hasVoted = game.Votes.Any(v => v.VoterId == playerId);
+
+            await InitializeSignalR();
+            isLoading = false;
+        }
+        catch (Exception ex)
+        {
+            isLoading = false;
+        }
+    }
+
+    private async Task InitializeSignalR()
+    {
+        hubConnection = new HubConnectionBuilder()
+            .WithUrl(Navigation.ToAbsoluteUri("/gamehub"))
+            .WithAutomaticReconnect()
+            .Build();
+
+        hubConnection.On<Game>("GameUpdated", async (updatedGame) =>
+        {
+            game = updatedGame;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<ChatMessage>("ReceiveMessage", async (message) =>
+        {
+            if (game != null)
+            {
+                game = await GameService.GetGameByIdAsync(gameId);
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+
+        hubConnection.On("DiscussionStarted", async () =>
+        {
+            if (game != null)
+            {
+                game = await GameService.GetGameByIdAsync(gameId);
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+
+        hubConnection.On<Game>("VotingStarted", async (updatedGame) =>
+        {
+            game = updatedGame;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        hubConnection.On<string>("VoteCast", async (voterId) =>
+        {
+            if (game != null)
+            {
+                game = await GameService.GetGameByIdAsync(gameId);
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+
+        hubConnection.On<Game>("GameFinished", async (updatedGame) =>
+        {
+            game = updatedGame;
+            await InvokeAsync(StateHasChanged);
+        });
+
+        await hubConnection.StartAsync();
+        await hubConnection.SendAsync("JoinGameGroup", gameId);
+        await hubConnection.SendAsync("UpdatePlayerConnection", playerId, gameId, true);
+    }
+
+    private async Task SendMessage()
+    {
+        if (hubConnection != null && !string.IsNullOrWhiteSpace(messageInput))
+        {
+            await hubConnection.SendAsync("SendMessage", gameId, playerId, messageInput);
+            messageInput = "";
+        }
+    }
+
+    private async Task HandleKeyDown(KeyboardEventArgs e)
+    {
+        if (e.Key == "Enter")
+        {
+            await SendMessage();
+        }
+    }
+
+    private async Task NextTurn()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.SendAsync("NextTurn", gameId);
+        }
+    }
+
+    private async Task StartDiscussion()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.SendAsync("NextTurn", gameId);
+        }
+    }
+
+    private async Task StartVoting()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.SendAsync("StartVoting", gameId);
+        }
+    }
+
+    private async Task CastVote(string targetPlayerId)
+    {
+        if (hubConnection != null && !hasVoted)
+        {
+            await hubConnection.SendAsync("CastVote", gameId, playerId, targetPlayerId);
+            hasVoted = true;
+        }
+    }
+
+    private Player? GetCurrentTurnPlayer()
+    {
+        if (game == null) return null;
+        var approvedPlayers = game.Players.Where(p => p.IsApproved).ToList();
+        if (game.CurrentTurnIndex < approvedPlayers.Count)
+        {
+            return approvedPlayers[game.CurrentTurnIndex];
+        }
+        return null;
+    }
+
+    private Player? GetPlayerById(string? id)
+    {
+        return game?.Players.FirstOrDefault(p => p.Id == id);
+    }
+
+    private string GetStateLabel()
+    {
+        return game?.State switch
+        {
+            GameState.Lobby => "In Attesa",
+            GameState.InProgress => "In Corso - Turni",
+            GameState.Discussion => "Discussione",
+            GameState.Voting => "Votazione",
+            GameState.Finished => "Finita",
+            _ => "Sconosciuto"
+        };
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.SendAsync("UpdatePlayerConnection", playerId, gameId, false);
+            await hubConnection.DisposeAsync();
+        }
+    }
+}

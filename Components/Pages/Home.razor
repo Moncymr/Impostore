@@ -1,0 +1,116 @@
+﻿@page "/"
+@rendermode InteractiveServer
+@inject NavigationManager Navigation
+
+<PageTitle>Impostore - Gioco Online</PageTitle>
+
+<div class="home-container">
+    <div class="home-card">
+        <h1 class="game-title">🎭 Impostore</h1>
+        <p class="game-subtitle">Gioco di deduzione sociale in tempo reale</p>
+
+        @if (string.IsNullOrEmpty(nickname))
+        {
+            <div class="nickname-section">
+                <h2>Inserisci il tuo nickname</h2>
+                <input type="text" 
+                       class="form-control" 
+                       @bind="inputNickname" 
+                       @bind:event="oninput"
+                       placeholder="Il tuo nickname..."
+                       maxlength="20" />
+                <button class="btn btn-primary btn-lg mt-3" 
+                        @onclick="SetNickname"
+                        disabled="@(string.IsNullOrWhiteSpace(inputNickname))">
+                    Continua
+                </button>
+            </div>
+        }
+        else
+        {
+            <div class="action-section">
+                <p class="welcome-text">Benvenuto, <strong>@nickname</strong>!</p>
+                
+                <div class="button-group">
+                    <button class="btn btn-success btn-lg" @onclick="CreateGame">
+                        🎮 Crea Partita
+                    </button>
+                    
+                    <div class="divider">oppure</div>
+                    
+                    <div class="join-game">
+                        <input type="text" 
+                               class="form-control" 
+                               @bind="gameCode" 
+                               @bind:event="oninput"
+                               placeholder="Codice partita..."
+                               maxlength="6" />
+                        <button class="btn btn-primary btn-lg mt-2" 
+                                @onclick="JoinGame"
+                                disabled="@(string.IsNullOrWhiteSpace(gameCode))">
+                            🚪 Unisciti alla Partita
+                        </button>
+                    </div>
+                </div>
+
+                @if (!string.IsNullOrEmpty(errorMessage))
+                {
+                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="rules-card">
+        <h3>📖 Come si gioca</h3>
+        <ul>
+            <li>Un giocatore è l'<strong>Impostore</strong></li>
+            <li>Gli altri giocatori ricevono una <strong>parola segreta</strong></li>
+            <li>L'Impostore NON conosce la parola</li>
+            <li>Tutti i giocatori parlano a turno cercando di non rivelare troppo</li>
+            <li>Alla fine si vota chi si pensa sia l'Impostore</li>
+            <li>Se l'Impostore viene scoperto, i giocatori vincono!</li>
+            <li>Se l'Impostore non viene scoperto, vince lui!</li>
+        </ul>
+    </div>
+</div>
+
+@code {
+    private string inputNickname = "";
+    private string nickname = "";
+    private string gameCode = "";
+    private string errorMessage = "";
+
+    protected override void OnInitialized()
+    {
+        // Check if nickname is already stored in session
+        var storedNickname = Navigation.GetQueryParameter("nickname");
+        if (!string.IsNullOrEmpty(storedNickname))
+        {
+            nickname = storedNickname;
+        }
+    }
+
+    private void SetNickname()
+    {
+        if (!string.IsNullOrWhiteSpace(inputNickname))
+        {
+            nickname = inputNickname.Trim();
+            errorMessage = "";
+        }
+    }
+
+    private void CreateGame()
+    {
+        Navigation.NavigateTo($"/lobby?nickname={Uri.EscapeDataString(nickname)}&create=true");
+    }
+
+    private void JoinGame()
+    {
+        if (!string.IsNullOrWhiteSpace(gameCode))
+        {
+            Navigation.NavigateTo($"/lobby?nickname={Uri.EscapeDataString(nickname)}&code={gameCode.ToUpper()}");
+        }
+    }
+}
+
