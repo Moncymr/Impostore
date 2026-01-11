@@ -288,6 +288,92 @@ public class GameService
         return true;
     }
 
+    public async Task<bool> SetPlayerReadyToVoteAsync(string gameId, string playerId, bool isReady)
+    {
+        var player = await _context.Players
+            .FirstOrDefaultAsync(p => p.Id == playerId && p.GameId == gameId);
+
+        if (player == null)
+            return false;
+
+        player.IsReadyToVote = isReady;
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> CastVoteByNameAsync(string gameId, string voterId, string targetPlayerName)
+    {
+        var game = await GetGameByIdAsync(gameId);
+        if (game == null || game.State != GameState.Voting)
+            return false;
+
+        // Check if already voted
+        var existingVote = game.Votes.FirstOrDefault(v => v.VoterId == voterId);
+        if (existingVote != null)
+            return false;
+
+        // Find the target player by name (case-insensitive match)
+        var targetPlayer = game.Players
+            .FirstOrDefault(p => p.IsApproved && 
+                p.Nickname.Equals(targetPlayerName.Trim(), StringComparison.OrdinalIgnoreCase));
+
+        var vote = new Vote
+        {
+            GameId = gameId,
+            VoterId = voterId,
+            TargetPlayerId = targetPlayer?.Id ?? string.Empty,
+            TargetPlayerName = targetPlayerName.Trim()
+        };
+
+        game.Votes.Add(vote);
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
+    public async Task<bool> ResetGameForRematchAsync(string gameId)
+    {
+        var game = await GetGameByIdAsync(gameId);
+        if (game == null || game.State != GameState.Finished)
+            return false;
+
+        // Reset game state
+        game.State = GameState.Lobby;
+        game.SecretWord = null;
+        game.WordHint = null;
+        game.ImpostorId = null;
+        game.CurrentTurnIndex = 0;
+        game.WinnerId = null;
+        game.ImpostorsWon = false;
+
+        // Reset player states but keep them in the game
+        foreach (var player in game.Players)
+        {
+            player.IsImpostor = false;
+            player.IsReadyToVote = false;
+            // Keep IsApproved, IsHost, ConnectionId as they are
+        }
+
+        // Clear votes and messages
+        var votesToRemove = game.Votes.ToList();
+        var messagesToRemove = game.Messages.ToList();
+        
+        foreach (var vote in votesToRemove)
+        {
+            _context.Votes.Remove(vote);
+        }
+        
+        foreach (var message in messagesToRemove)
+        {
+            _context.ChatMessages.Remove(message);
+        }
+
+        await _context.SaveChangesAsync();
+
+        return true;
+    }
+
     public async Task UpdatePlayerConnectionAsync(string playerId, string connectionId, bool isConnected)
     {
         var player = await _context.Players.FirstOrDefaultAsync(p => p.Id == playerId);

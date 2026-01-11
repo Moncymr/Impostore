@@ -217,6 +217,59 @@ public class GameHub : Hub
         }
     }
 
+    public async Task SetPlayerReadyToVote(string gameId, string playerId)
+    {
+        var success = await _gameService.SetPlayerReadyToVoteAsync(gameId, playerId, true);
+        if (success)
+        {
+            var game = await _gameService.GetGameByIdAsync(gameId);
+            await Clients.Group(gameId).SendAsync("PlayerReadyUpdated", playerId);
+            
+            // Check if all players are ready
+            var approvedPlayers = game?.Players.Where(p => p.IsApproved).ToList() ?? new List<Player>();
+            var readyCount = approvedPlayers.Count(p => p.IsReadyToVote);
+            
+            if (readyCount == approvedPlayers.Count && approvedPlayers.Count > 0)
+            {
+                // All players are ready, start voting phase
+                await StartVoting(gameId);
+            }
+            else
+            {
+                await Clients.Group(gameId).SendAsync("GameUpdated", game);
+            }
+        }
+    }
+
+    public async Task CastVoteByName(string gameId, string voterId, string targetPlayerName)
+    {
+        var success = await _gameService.CastVoteByNameAsync(gameId, voterId, targetPlayerName);
+        if (success)
+        {
+            await Clients.Group(gameId).SendAsync("VoteCast", voterId);
+            
+            var game = await _gameService.GetGameByIdAsync(gameId);
+            var approvedPlayerCount = game?.Players.Count(p => p.IsApproved) ?? 0;
+            var voteCount = game?.Votes.Count ?? 0;
+            
+            if (voteCount >= approvedPlayerCount)
+            {
+                await FinishGame(gameId);
+            }
+        }
+    }
+
+    public async Task StartRematch(string gameId)
+    {
+        var success = await _gameService.ResetGameForRematchAsync(gameId);
+        if (success)
+        {
+            var game = await _gameService.GetGameByIdAsync(gameId);
+            await Clients.Group(gameId).SendAsync("RematchStarted", game);
+            await _gameService.AddSystemMessageAsync(gameId, "Nuova partita iniziata! Tutti i giocatori sono stati riportati alla lobby.");
+        }
+    }
+
     public async Task UpdatePlayerConnection(string playerId, string gameId, bool isConnected)
     {
         await _gameService.UpdatePlayerConnectionAsync(playerId, Context.ConnectionId, isConnected);

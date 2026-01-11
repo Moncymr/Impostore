@@ -89,12 +89,29 @@
                         <div class="discussion-section">
                             <h3>💬 Fase Discussione</h3>
                             <p>Discutete liberamente chi potrebbe essere l'impostore!</p>
-                            @if (isHost)
+                            
+                            @if (!currentPlayer.IsReadyToVote)
                             {
-                                <button class="btn btn-success" @onclick="StartVoting">
-                                    Inizia Votazione
+                                <button class="btn btn-success" @onclick="DeclareReady">
+                                    ✋ Sono Pronto a Votare
                                 </button>
                             }
+                            else
+                            {
+                                <p class="ready-message">✓ Sei pronto! In attesa degli altri giocatori...</p>
+                            }
+                            
+                            <div class="ready-status mt-3">
+                                <p>Giocatori pronti: @game.Players.Count(p => p.IsApproved && p.IsReadyToVote) / @game.Players.Count(p => p.IsApproved)</p>
+                                <div class="ready-list">
+                                    @foreach (var player in game.Players.Where(p => p.IsApproved))
+                                    {
+                                        <span class="player-ready-badge @(player.IsReadyToVote ? "ready" : "not-ready")">
+                                            @player.Nickname @(player.IsReadyToVote ? "✓" : "⏳")
+                                        </span>
+                                    }
+                                </div>
+                            </div>
                         </div>
                     }
 
@@ -104,20 +121,34 @@
                             <h3>🗳️ Votazione</h3>
                             @if (!hasVoted)
                             {
-                                <p>Vota chi pensi sia l'impostore:</p>
-                                <div class="voting-list">
-                                    @foreach (var player in game.Players.Where(p => p.IsApproved && p.Id != currentPlayer.Id))
-                                    {
-                                        <button class="btn btn-outline-primary vote-btn" 
-                                                @onclick="() => CastVote(player.Id)">
-                                            @player.Nickname
-                                        </button>
-                                    }
+                                <p>Scrivi il nome di chi pensi sia l'impostore:</p>
+                                <div class="name-voting-input">
+                                    <input type="text" 
+                                           class="form-control" 
+                                           @bind="votePlayerName" 
+                                           @bind:event="oninput"
+                                           placeholder="Nome del giocatore..."
+                                           maxlength="20" />
+                                    <button class="btn btn-primary mt-2" 
+                                            @onclick="CastVoteByName"
+                                            disabled="@(string.IsNullOrWhiteSpace(votePlayerName))">
+                                        Vota
+                                    </button>
+                                </div>
+                                <div class="players-hint mt-3">
+                                    <p><small>Giocatori in partita:</small></p>
+                                    <div class="player-names">
+                                        @foreach (var player in game.Players.Where(p => p.IsApproved))
+                                        {
+                                            <span class="player-name-badge">@player.Nickname</span>
+                                        }
+                                    </div>
                                 </div>
                             }
                             else
                             {
-                                <p class="voted-message">✓ Hai votato! In attesa degli altri...</p>
+                                <p class="voted-message">✓ Hai votato per: <strong>@votedPlayerName</strong></p>
+                                <p>In attesa degli altri...</p>
                                 <p>Voti ricevuti: @game.Votes.Count / @game.Players.Count(p => p.IsApproved)</p>
                             }
                         </div>
@@ -144,9 +175,22 @@
                                     <p>La parola segreta era: <strong>@game.SecretWord</strong></p>
                                 </div>
                             }
-                            <button class="btn btn-primary mt-3" @onclick='() => Navigation.NavigateTo("/")'>
-                                Torna alla Home
-                            </button>
+                            
+                            <div class="game-end-actions mt-4">
+                                @if (isHost)
+                                {
+                                    <button class="btn btn-success btn-lg me-2" @onclick="StartRematch">
+                                        🔄 Nuova Partita
+                                    </button>
+                                }
+                                else
+                                {
+                                    <p class="text-muted">In attesa che l'host inizi una nuova partita...</p>
+                                }
+                                <button class="btn btn-outline-secondary mt-2" @onclick='() => Navigation.NavigateTo("/")'>
+                                    🏠 Torna alla Home
+                                </button>
+                            </div>
                         </div>
                     }
                 </div>
@@ -215,6 +259,8 @@
     private bool isLoading = true;
     private string messageInput = "";
     private bool hasVoted = false;
+    private string votePlayerName = "";
+    private string votedPlayerName = "";
     private ElementReference chatContainer;
 
     protected override async Task OnInitializedAsync()
@@ -318,6 +364,28 @@
             }
         });
 
+        hubConnection.On<string>("PlayerReadyUpdated", async (readyPlayerId) =>
+        {
+            // Refresh game state when a player declares ready
+            if (game != null)
+            {
+                game = await GameService.GetGameByIdAsync(gameId);
+                currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
+                await InvokeAsync(StateHasChanged);
+            }
+        });
+
+        hubConnection.On<Game>("RematchStarted", async (updatedGame) =>
+        {
+            // Game has been reset for a rematch
+            game = updatedGame;
+            currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
+            hasVoted = false;
+            votedPlayerName = "";
+            votePlayerName = "";
+            await InvokeAsync(StateHasChanged);
+        });
+
         await hubConnection.StartAsync();
         await hubConnection.SendAsync("JoinGameGroup", gameId);
         await hubConnection.SendAsync("UpdatePlayerConnection", playerId, gameId, true);
@@ -370,6 +438,33 @@
         {
             await hubConnection.SendAsync("CastVote", gameId, playerId, targetPlayerId);
             hasVoted = true;
+        }
+    }
+
+    private async Task DeclareReady()
+    {
+        if (hubConnection != null && currentPlayer != null)
+        {
+            await hubConnection.SendAsync("SetPlayerReadyToVote", gameId, playerId);
+        }
+    }
+
+    private async Task CastVoteByName()
+    {
+        if (hubConnection != null && !hasVoted && !string.IsNullOrWhiteSpace(votePlayerName))
+        {
+            await hubConnection.SendAsync("CastVoteByName", gameId, playerId, votePlayerName);
+            votedPlayerName = votePlayerName;
+            hasVoted = true;
+            votePlayerName = "";
+        }
+    }
+
+    private async Task StartRematch()
+    {
+        if (hubConnection != null && isHost)
+        {
+            await hubConnection.SendAsync("StartRematch", gameId);
         }
     }
 
