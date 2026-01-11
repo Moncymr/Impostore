@@ -38,21 +38,8 @@ public class GameHub : Hub
         if (player == null)
             return;
         
-        // Find the host player
-        var host = game.Players.FirstOrDefault(p => p.IsHost);
-        if (host == null)
-            return;
-            
-        // Notify only the host about the new player join request
-        if (!string.IsNullOrEmpty(host.ConnectionId))
-        {
-            await Clients.Client(host.ConnectionId).SendAsync("PlayerJoinRequest", player);
-        }
-        else
-        {
-            // Fallback: notify all other players in group if host connection ID not set
-            await Clients.OthersInGroup(gameId).SendAsync("PlayerJoinRequest", player);
-        }
+        // Notify the host about the new player join request
+        await NotifyHostAboutPlayerJoin(game, gameId, player);
     }
 
     public async Task LeaveGameGroup(string gameId)
@@ -78,19 +65,30 @@ public class GameHub : Hub
 
         await Groups.AddToGroupAsync(Context.ConnectionId, game.Id);
         
-        // Find the host and notify only them about the join request
+        // Notify the host about the new player join request
+        await NotifyHostAboutPlayerJoin(game, game.Id, player);
+        
+        await Clients.Caller.SendAsync("JoinRequestSent", game.Id);
+    }
+
+    private async Task NotifyHostAboutPlayerJoin(Game game, string gameId, Player player)
+    {
+        // Find the host player
         var host = game.Players.FirstOrDefault(p => p.IsHost);
-        if (host != null && !string.IsNullOrEmpty(host.ConnectionId))
+        if (host == null)
+            return;
+            
+        // Notify only the host about the new player join request
+        if (!string.IsNullOrEmpty(host.ConnectionId))
         {
             await Clients.Client(host.ConnectionId).SendAsync("PlayerJoinRequest", player);
         }
         else
         {
-            // Fallback: notify all other players in group if host connection ID not set
-            await Clients.OthersInGroup(game.Id).SendAsync("PlayerJoinRequest", player);
+            // Fallback: notify other players in group (excluding the joining player) if host ConnectionId not set
+            // This excludes the joining player to avoid the duplicate notification issue
+            await Clients.OthersInGroup(gameId).SendAsync("PlayerJoinRequest", player);
         }
-        
-        await Clients.Caller.SendAsync("JoinRequestSent", game.Id);
     }
 
     public async Task ApprovePlayer(string gameId, string playerId)
