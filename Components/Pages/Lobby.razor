@@ -117,6 +117,7 @@
     private string gameId = "";
     private bool isHost = false;
     private bool isLoading = true;
+    private bool isInitialized = false;
     private string errorMessage = "";
     private string statusMessage = "";
 
@@ -125,6 +126,11 @@
 
     protected override async Task OnInitializedAsync()
     {
+        // Prevent double initialization
+        if (isInitialized)
+            return;
+        
+        isInitialized = true;
         nickname = Navigation.GetQueryParameter("nickname") ?? "";
         var createGame = Navigation.GetQueryParameter("create") == "true";
         var gameCode = Navigation.GetQueryParameter("code");
