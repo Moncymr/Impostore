@@ -73,14 +73,27 @@
                         <div class="turn-section">
                             <h3>Fase Turni</h3>
                             <p>È il turno di: <strong>@GetCurrentTurnPlayer()?.Nickname</strong></p>
+                            
+                            @* Show pass button to current turn player *@
+                            @if (GetCurrentTurnPlayer()?.Id == currentPlayer?.Id)
+                            {
+                                <button class="btn btn-secondary" @onclick="PassTurn">
+                                    ⏭️ Passa il Turno
+                                </button>
+                                <p class="text-muted mt-2"><small>Scrivi un messaggio o passa il turno senza scrivere</small></p>
+                            }
+                            
+                            @* Host controls *@
                             @if (isHost)
                             {
-                                <button class="btn btn-primary" @onclick="NextTurn">
-                                    Turno Successivo
-                                </button>
-                                <button class="btn btn-warning ms-2" @onclick="StartDiscussion">
-                                    Passa alla Discussione
-                                </button>
+                                <div class="mt-3">
+                                    <button class="btn btn-outline-primary btn-sm" @onclick="NextTurn">
+                                        Turno Successivo (Host)
+                                    </button>
+                                    <button class="btn btn-warning btn-sm ms-2" @onclick="StartDiscussion">
+                                        Passa alla Discussione
+                                    </button>
+                                </div>
                             }
                         </div>
                     }
@@ -313,6 +326,7 @@
         hubConnection.On<Game>("GameUpdated", async (updatedGame) =>
         {
             game = updatedGame;
+            currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
             await InvokeAsync(StateHasChanged);
         });
 
@@ -321,6 +335,7 @@
             if (game != null)
             {
                 game = await GameService.GetGameByIdAsync(gameId);
+                currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
                 await InvokeAsync(StateHasChanged);
             }
         });
@@ -330,6 +345,7 @@
             if (game != null)
             {
                 game = await GameService.GetGameByIdAsync(gameId);
+                currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
                 await InvokeAsync(StateHasChanged);
             }
         });
@@ -337,6 +353,7 @@
         hubConnection.On<Game>("VotingStarted", async (updatedGame) =>
         {
             game = updatedGame;
+            currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
             await InvokeAsync(StateHasChanged);
         });
 
@@ -345,6 +362,7 @@
             if (game != null)
             {
                 game = await GameService.GetGameByIdAsync(gameId);
+                currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
                 await InvokeAsync(StateHasChanged);
             }
         });
@@ -352,6 +370,7 @@
         hubConnection.On<Game>("GameFinished", async (updatedGame) =>
         {
             game = updatedGame;
+            currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
             await InvokeAsync(StateHasChanged);
         });
 
@@ -361,6 +380,7 @@
             if (game != null)
             {
                 game = await GameService.GetGameByIdAsync(gameId);
+                currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
                 await InvokeAsync(StateHasChanged);
             }
         });
@@ -374,6 +394,14 @@
                 currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
                 await InvokeAsync(StateHasChanged);
             }
+        });
+
+        hubConnection.On<Game>("GameStarted", async (updatedGame) =>
+        {
+            // Game has started, refresh full game state
+            game = updatedGame;
+            currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
+            await InvokeAsync(StateHasChanged);
         });
 
         hubConnection.On<Game>("RematchStarted", async (updatedGame) =>
@@ -410,6 +438,14 @@
     }
 
     private async Task NextTurn()
+    {
+        if (hubConnection != null)
+        {
+            await hubConnection.SendAsync("NextTurn", gameId);
+        }
+    }
+
+    private async Task PassTurn()
     {
         if (hubConnection != null)
         {

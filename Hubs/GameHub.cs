@@ -140,6 +140,20 @@ public class GameHub : Hub
             {
                 await Clients.Group(gameId).SendAsync("ReceiveMessage", chatMessage);
             }
+            
+            // Auto-advance turn if in turn-based phase (InProgress)
+            if (game?.State == GameState.InProgress)
+            {
+                // Check if the message sender is the current turn player
+                var approvedPlayers = game.Players.Where(p => p.IsApproved).ToList();
+                var currentTurnPlayer = approvedPlayers.ElementAtOrDefault(game.CurrentTurnIndex);
+                
+                if (currentTurnPlayer?.Id == playerId)
+                {
+                    // Automatically advance to next turn
+                    await NextTurn(gameId);
+                }
+            }
         }
     }
 
