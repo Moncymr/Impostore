@@ -1,10 +1,12 @@
 using ImpostoreGame.Components;
 using ImpostoreGame.Data;
-using ImpostoreGame.Services;
 using ImpostoreGame.Hubs;
+using ImpostoreGame.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+
 
 // Add services to the container.
 builder.Services.AddRazorComponents()
@@ -22,7 +24,8 @@ builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<WordService>();
 
 var app = builder.Build();
-
+var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
+app.Urls.Add($"http://0.0.0.0:{port}");
 // Ensure database is created and seeded
 using (var scope = app.Services.CreateScope())
 {
