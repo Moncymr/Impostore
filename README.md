@@ -2,6 +2,10 @@
 
 Un'applicazione web gratuita per giocare al gioco "Impostore" (simile a Spyfall) in tempo reale con amici.
 
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.app/template/new)
+
+> 🚀 **Pronto per il Deploy!** Questo progetto è completamente configurato per essere pubblicato su Railway in un click. Vedi la sezione [Deploy su Railway](#railway-consigliato-) per i dettagli.
+
 ## 📋 Descrizione
 
 Impostore è un gioco di deduzione sociale dove un giocatore è l'impostore che non conosce la parola segreta, mentre tutti gli altri la conoscono. I giocatori devono discutere e votare per scoprire chi è l'impostore.
@@ -128,22 +132,59 @@ Impostore/
 
 ## 🚢 Deploy
 
+### Railway (Consigliato) ⭐
+
+Il progetto è ora completamente configurato per il deploy su Railway!
+
+#### Opzione 1: Deploy da Repository GitHub (Consigliato)
+1. Vai su [Railway.app](https://railway.app/) e crea un account
+2. Clicca su "New Project" → "Deploy from GitHub repo"
+3. Seleziona questo repository (`Impostore`)
+4. Railway rileverà automaticamente il progetto .NET 10 grazie al file `nixpacks.toml`
+5. Il deploy partirà automaticamente
+6. Railway genererà un URL pubblico (es. `https://impostore-production.up.railway.app`)
+7. Ogni push sul branch principale farà un deploy automatico
+
+#### Opzione 2: Deploy da CLI
+```bash
+# Installa Railway CLI
+npm i -g @railway/cli
+
+# Login
+railway login
+
+# Inizializza il progetto
+railway init
+
+# Deploy
+railway up
+```
+
+#### Note Tecniche Railway
+- ✅ **Nixpacks**: Configurato tramite `nixpacks.toml` per .NET 10
+- ✅ **PORT dinamico**: L'app si adatta automaticamente alla variabile `PORT` fornita da Railway
+- ✅ **Build automatica**: Usa `dotnet publish -c Release`
+- ✅ **Start automatico**: Esegue `dotnet ImpostoreGame.dll` dalla cartella `out/`
+- ✅ **HTTPS**: Railway fornisce automaticamente certificati SSL
+- ✅ **In-Memory Database**: Perfetto per deploy rapidi senza configurazione DB
+
+#### Monitoraggio su Railway
+- **Logs in tempo reale**: Visibili nella dashboard Railway
+- **Metriche**: CPU, memoria e traffico di rete
+- **Health check**: Su `/` ogni 100 secondi
+- **Auto-restart**: In caso di failure (max 10 retry)
+
 ### Azure App Service (Free Tier)
 ```bash
 # Pubblica su Azure
 az webapp up --name impostore-game --resource-group myResourceGroup
 ```
 
-### Railway
-1. Connetti il repository GitHub
-2. Railway rileverà automaticamente il progetto .NET
-3. Deploy automatico ad ogni push
-
 ### Render
 1. Crea un nuovo Web Service
 2. Connetti il repository
-3. Build Command: `dotnet build`
-4. Start Command: `dotnet run`
+3. Build Command: `dotnet publish -c Release -o out`
+4. Start Command: `cd out && dotnet ImpostoreGame.dll`
 
 ## 📝 Note Tecniche
 
