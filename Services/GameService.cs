@@ -15,7 +15,7 @@ public class GameService
         _wordService = wordService;
     }
 
-    public async Task<Game> CreateGameAsync(string hostPlayerId, string hostNickname)
+    public async Task<Game> CreateGameAsync(string hostPlayerId, string hostNickname, string hostAvatar = "😀")
     {
         var game = new Game
         {
@@ -28,6 +28,7 @@ public class GameService
         {
             Id = hostPlayerId,
             Nickname = hostNickname,
+            Avatar = hostAvatar,
             GameId = game.Id,
             IsHost = true,
             IsApproved = true
@@ -58,7 +59,7 @@ public class GameService
             .FirstOrDefaultAsync(g => g.Id == gameId);
     }
 
-    public async Task<(Player? player, bool isNewPlayer)> AddPlayerToGameAsync(string gameId, string playerId, string nickname)
+    public async Task<(Player? player, bool isNewPlayer)> AddPlayerToGameAsync(string gameId, string playerId, string nickname, string avatar = "😀")
     {
         var game = await GetGameByIdAsync(gameId);
         if (game == null || game.State != GameState.Lobby)
@@ -82,6 +83,7 @@ public class GameService
         {
             Id = playerId,
             Nickname = nickname,
+            Avatar = avatar,
             GameId = gameId,
             IsApproved = false
         };
@@ -172,6 +174,7 @@ public class GameService
             GameId = gameId,
             PlayerId = playerId,
             PlayerName = player.Nickname,
+            PlayerAvatar = player.Avatar,
             Message = message
         };
 

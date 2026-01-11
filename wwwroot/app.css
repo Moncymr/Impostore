@@ -146,6 +146,45 @@ body {
     line-height: 1.8;
 }
 
+/* Avatar Selection */
+.avatar-selection {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(50px, 1fr));
+    gap: 0.5rem;
+    margin-top: 1rem;
+    max-width: 100%;
+}
+
+.avatar-option {
+    font-size: 2rem;
+    padding: 0.5rem;
+    border: 3px solid transparent;
+    border-radius: 10px;
+    background: #f8f9fa;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.avatar-option:hover {
+    background: #e9ecef;
+    transform: scale(1.1);
+}
+
+.avatar-option.selected {
+    border-color: #667eea;
+    background: #e7ebf9;
+    transform: scale(1.15);
+}
+
+.player-avatar {
+    font-size: 1.5rem;
+    margin-right: 0.5rem;
+}
+
 /* Lobby Page */
 .lobby-container {
     max-width: 900px;
@@ -454,6 +493,11 @@ body {
     color: #0c5460;
     font-style: italic;
     text-align: center;
+}
+
+.message-avatar {
+    font-size: 1.2rem;
+    margin-right: 0.3rem;
 }
 
 .message-author {
