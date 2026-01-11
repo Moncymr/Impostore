@@ -170,6 +170,13 @@
             }
 
             await InitializeSignalR();
+            
+            // Notify all players in the game group about the new player joining
+            if (!isHost && hubConnection != null && currentPlayer != null && game != null)
+            {
+                await hubConnection.SendAsync("NotifyPlayerJoined", game.Id, playerId, nickname);
+            }
+            
             isLoading = false;
         }
         catch (Exception ex)
