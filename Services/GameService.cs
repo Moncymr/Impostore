@@ -122,8 +122,19 @@ public class GameService
         impostor.IsImpostor = true;
         game.ImpostorId = impostor.Id;
 
-        // Assign secret word
-        game.SecretWord = await _wordService.GetRandomWordAsync();
+        // Assign secret word and hint
+        var word = await _wordService.GetRandomWordAsync();
+        if (word != null)
+        {
+            game.SecretWord = word.Text;
+            game.WordHint = word.Hint;
+        }
+        else
+        {
+            game.SecretWord = "Parola";
+            game.WordHint = "Categoria generica";
+        }
+        
         game.State = GameState.InProgress;
         game.CurrentTurnIndex = 0;
 

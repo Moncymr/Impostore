@@ -29,12 +29,20 @@
         else
         {
             <div class="action-section">
-                <p class="welcome-text">Benvenuto, <strong>@nickname</strong>!</p>
+                <p class="welcome-text">Benvenuto condomio de Amicis!!</p>
                 
                 <div class="button-group">
-                    <button class="btn btn-success btn-lg" @onclick="CreateGame">
-                        🎮 Crea Partita
-                    </button>
+                    <div class="create-game-section">
+                        <input type="password" 
+                               class="form-control mb-2" 
+                               @bind="password" 
+                               @bind:event="oninput"
+                               placeholder="Password per creare partita..."
+                               maxlength="20" />
+                        <button class="btn btn-success btn-lg" @onclick="CreateGame">
+                            🎮 Crea Partita
+                        </button>
+                    </div>
                     
                     <div class="divider">oppure</div>
                     
@@ -76,9 +84,11 @@
 </div>
 
 @code {
+    private const string GAME_PASSWORD = "deamicis2024";
     private string inputNickname = "";
     private string nickname = "";
     private string gameCode = "";
+    private string password = "";
     private string errorMessage = "";
 
     protected override void OnInitialized()
@@ -102,6 +112,19 @@
 
     private void CreateGame()
     {
+        if (string.IsNullOrWhiteSpace(password))
+        {
+            errorMessage = "Inserisci la password per creare una partita";
+            return;
+        }
+
+        if (password.Trim() != GAME_PASSWORD)
+        {
+            errorMessage = "Password non corretta";
+            return;
+        }
+
+        errorMessage = "";
         Navigation.NavigateTo($"/lobby?nickname={Uri.EscapeDataString(nickname)}&create=true");
     }
 

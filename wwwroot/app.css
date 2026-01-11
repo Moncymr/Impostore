@@ -120,6 +120,11 @@ body {
     font-size: 0.9rem;
 }
 
+.create-game-section {
+    display: flex;
+    flex-direction: column;
+}
+
 .join-game {
     display: flex;
     flex-direction: column;
@@ -328,6 +333,25 @@ body {
 .impostor-card {
     background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
     color: white;
+}
+
+.hint-box {
+    margin-top: 1.5rem;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 1rem;
+    border-radius: 8px;
+    backdrop-filter: blur(10px);
+}
+
+.hint-box h3 {
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.hint-text {
+    font-size: 1.3rem;
+    font-weight: bold;
+    margin: 0;
 }
 
 .word-card {

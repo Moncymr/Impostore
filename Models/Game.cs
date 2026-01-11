@@ -8,6 +8,7 @@ public class Game
     public GameState State { get; set; } = GameState.Lobby;
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public string? SecretWord { get; set; }
+    public string? WordHint { get; set; }
     public string? ImpostorId { get; set; }
     public int CurrentTurnIndex { get; set; } = 0;
     public List<Player> Players { get; set; } = new();

@@ -13,14 +13,14 @@ public class WordService
         _context = context;
     }
 
-    public async Task<string> GetRandomWordAsync()
+    public async Task<Word?> GetRandomWordAsync()
     {
         var words = await _context.Words.ToListAsync();
         if (words.Count == 0)
-            return "Parola";
+            return null;
 
         var word = words[Random.Shared.Next(words.Count)];
-        return word.Text;
+        return word;
     }
 
     public async Task<List<string>> GetCategoriesAsync()
@@ -31,16 +31,16 @@ public class WordService
             .ToListAsync();
     }
 
-    public async Task<string> GetRandomWordByCategoryAsync(string category)
+    public async Task<Word?> GetRandomWordByCategoryAsync(string category)
     {
         var words = await _context.Words
             .Where(w => w.Category == category)
             .ToListAsync();
 
         if (words.Count == 0)
-            return "Parola";
+            return null;
 
         var word = words[Random.Shared.Next(words.Count)];
-        return word.Text;
+        return word;
     }
 }

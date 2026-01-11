@@ -47,6 +47,13 @@
                                 <div class="impostor-card">
                                     <h2>🎭 SEI L'IMPOSTORE!</h2>
                                     <p>Non conosci la parola segreta. Cerca di non farti scoprire!</p>
+                                    @if (!string.IsNullOrEmpty(game.WordHint))
+                                    {
+                                        <div class="hint-box">
+                                            <h3>💡 Suggerimento:</h3>
+                                            <p class="hint-text">@game.WordHint</p>
+                                        </div>
+                                    }
                                 </div>
                             }
                             else
