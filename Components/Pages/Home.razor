@@ -107,6 +107,7 @@
         {
             nickname = inputNickname.Trim();
             errorMessage = "";
+            StateHasChanged();
         }
     }
 
@@ -115,12 +116,14 @@
         if (string.IsNullOrWhiteSpace(password))
         {
             errorMessage = "Inserisci la password per creare una partita";
+            StateHasChanged();
             return;
         }
 
         if (password.Trim() != GAME_PASSWORD)
         {
             errorMessage = "Password non corretta";
+            StateHasChanged();
             return;
         }
 
