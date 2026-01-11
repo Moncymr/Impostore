@@ -30,7 +30,7 @@
     {
         <div class="game-layout">
             <div class="game-header">
-                <h1>🎭 Impostore</h1>
+                <h1>🎭 Impostore - @currentPlayer?.Nickname</h1>
                 <div class="game-info">
                     <span class="game-code">Codice: @game.Code</span>
                     <span class="game-state">@GetStateLabel()</span>
@@ -39,7 +39,8 @@
 
             <div class="game-main">
                 <div class="game-content">
-                    @if (game.State == GameState.InProgress || game.State == GameState.Discussion || game.State == GameState.Voting)
+                    @* Always show role card once game has started *@
+                    @if (game.State != GameState.Lobby && currentPlayer != null)
                     {
                         <div class="secret-card">
                             @if (currentPlayer.IsImpostor)
