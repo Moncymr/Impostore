@@ -27,6 +27,20 @@ public class GameHub : Hub
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
     }
+    
+    public async Task NotifyPlayerJoined(string gameId, string playerId, string nickname)
+    {
+        var game = await _gameService.GetGameByIdAsync(gameId);
+        if (game == null)
+            return;
+            
+        var player = game.Players.FirstOrDefault(p => p.Id == playerId);
+        if (player == null)
+            return;
+            
+        // Notify all players in the game group about the new player
+        await Clients.Group(gameId).SendAsync("PlayerJoinRequest", player);
+    }
 
     public async Task LeaveGameGroup(string gameId)
     {

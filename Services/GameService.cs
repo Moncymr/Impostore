@@ -64,6 +64,11 @@ public class GameService
         if (game == null || game.State != GameState.Lobby)
             return null;
 
+        // Check if player already exists in this game
+        var existingPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
+        if (existingPlayer != null)
+            return existingPlayer;
+
         var player = new Player
         {
             Id = playerId,
