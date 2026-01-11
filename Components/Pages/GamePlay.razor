@@ -84,6 +84,33 @@
                                 <p class="text-muted mt-2"><small>Scrivi un messaggio o passa il turno senza scrivere</small></p>
                             }
                             
+                            @* Ready to vote button - available to all players *@
+                            <div class="mt-3 ready-to-vote-section">
+                                <h4>Pronto a Votare?</h4>
+                                @if (!currentPlayer.IsReadyToVote)
+                                {
+                                    <button class="btn btn-success btn-lg" @onclick="DeclareReady">
+                                        ✋ Sono Pronto a Votare
+                                    </button>
+                                }
+                                else
+                                {
+                                    <p class="ready-message">✓ Sei pronto! In attesa degli altri giocatori...</p>
+                                }
+                                
+                                <div class="ready-status mt-3">
+                                    <p>Giocatori pronti: @game.Players.Count(p => p.IsApproved && p.IsReadyToVote) / @game.Players.Count(p => p.IsApproved)</p>
+                                    <div class="ready-list">
+                                        @foreach (var player in game.Players.Where(p => p.IsApproved))
+                                        {
+                                            <span class="player-ready-badge @(player.IsReadyToVote ? "ready" : "not-ready")">
+                                                @player.Nickname @(player.IsReadyToVote ? "✓" : "⏳")
+                                            </span>
+                                        }
+                                    </div>
+                                </div>
+                            </div>
+                            
                             @* Host controls - Always visible and prominent *@
                             @if (isHost)
                             {
@@ -91,42 +118,11 @@
                                     <button class="btn btn-primary" @onclick="NextTurn">
                                         ➡️ Turno Successivo
                                     </button>
-                                    <button class="btn btn-warning ms-2" @onclick="StartDiscussion">
-                                        💬 Passa alla Discussione
+                                    <button class="btn btn-warning ms-2" @onclick="StartVotingManually">
+                                        🗳️ Inizia Votazione
                                     </button>
                                 </div>
                             }
-                        </div>
-                    }
-
-                    @if (game.State == GameState.Discussion)
-                    {
-                        <div class="discussion-section">
-                            <h3>💬 Fase Discussione</h3>
-                            <p>Discutete liberamente chi potrebbe essere l'impostore!</p>
-                            
-                            @if (!currentPlayer.IsReadyToVote)
-                            {
-                                <button class="btn btn-success" @onclick="DeclareReady">
-                                    ✋ Sono Pronto a Votare
-                                </button>
-                            }
-                            else
-                            {
-                                <p class="ready-message">✓ Sei pronto! In attesa degli altri giocatori...</p>
-                            }
-                            
-                            <div class="ready-status mt-3">
-                                <p>Giocatori pronti: @game.Players.Count(p => p.IsApproved && p.IsReadyToVote) / @game.Players.Count(p => p.IsApproved)</p>
-                                <div class="ready-list">
-                                    @foreach (var player in game.Players.Where(p => p.IsApproved))
-                                    {
-                                        <span class="player-ready-badge @(player.IsReadyToVote ? "ready" : "not-ready")">
-                                            @player.Nickname @(player.IsReadyToVote ? "✓" : "⏳")
-                                        </span>
-                                    }
-                                </div>
-                            </div>
                         </div>
                     }
 
@@ -136,28 +132,21 @@
                             <h3>🗳️ Votazione</h3>
                             @if (!hasVoted)
                             {
-                                <p>Scrivi il nome di chi pensi sia l'impostore:</p>
-                                <div class="name-voting-input">
-                                    <input type="text" 
-                                           class="form-control" 
-                                           @bind="votePlayerName" 
-                                           @bind:event="oninput"
-                                           placeholder="Nome del giocatore..."
-                                           maxlength="20" />
-                                    <button class="btn btn-primary mt-2" 
+                                <p>Seleziona chi pensi sia l'impostore:</p>
+                                <div class="name-voting-select">
+                                    <select class="form-select form-select-lg" 
+                                            @bind="votePlayerName">
+                                        <option value="">-- Seleziona un giocatore --</option>
+                                        @foreach (var player in game.Players.Where(p => p.IsApproved && p.Id != currentPlayer?.Id))
+                                        {
+                                            <option value="@player.Nickname">@player.Nickname</option>
+                                        }
+                                    </select>
+                                    <button class="btn btn-primary btn-lg mt-3 w-100" 
                                             @onclick="CastVoteByName"
                                             disabled="@(string.IsNullOrWhiteSpace(votePlayerName))">
-                                        Vota
+                                        🗳️ Vota
                                     </button>
-                                </div>
-                                <div class="players-hint mt-3">
-                                    <p><small>Giocatori in partita:</small></p>
-                                    <div class="player-names">
-                                        @foreach (var player in game.Players.Where(p => p.IsApproved))
-                                        {
-                                            <span class="player-name-badge">@player.Nickname</span>
-                                        }
-                                    </div>
                                 </div>
                             }
                             else
@@ -344,16 +333,6 @@
             }
         });
 
-        hubConnection.On("DiscussionStarted", async () =>
-        {
-            if (game != null)
-            {
-                game = await GameService.GetGameByIdAsync(gameId);
-                currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
-                await InvokeAsync(StateHasChanged);
-            }
-        });
-
         hubConnection.On<Game>("VotingStarted", async (updatedGame) =>
         {
             game = updatedGame;
@@ -457,11 +436,19 @@
         }
     }
 
-    private async Task StartDiscussion()
+    private async Task StartVotingManually()
     {
         if (hubConnection != null)
         {
-            await hubConnection.SendAsync("NextTurn", gameId);
+            await hubConnection.SendAsync("StartVoting", gameId);
+        }
+    }
+
+    private async Task DeclareReady()
+    {
+        if (hubConnection != null && currentPlayer != null)
+        {
+            await hubConnection.SendAsync("SetPlayerReadyToVote", gameId, playerId);
         }
     }
 
@@ -479,14 +466,6 @@
         {
             await hubConnection.SendAsync("CastVote", gameId, playerId, targetPlayerId);
             hasVoted = true;
-        }
-    }
-
-    private async Task DeclareReady()
-    {
-        if (hubConnection != null && currentPlayer != null)
-        {
-            await hubConnection.SendAsync("SetPlayerReadyToVote", gameId, playerId);
         }
     }
 
@@ -541,9 +520,8 @@
                 var currentTurnPlayer = GetCurrentTurnPlayer();
                 return currentTurnPlayer?.Id == currentPlayer.Id;
             
-            case GameState.Discussion:
             case GameState.Voting:
-                // During discussion and voting phases, everyone can send messages
+                // During voting phase, everyone can send messages
                 return true;
             
             case GameState.Finished:
@@ -575,9 +553,6 @@
                     return "È il tuo turno! Scrivi il tuo messaggio...";
                 else
                     return $"È il turno di {currentTurnPlayer?.Nickname}. Attendi il tuo turno...";
-            
-            case GameState.Discussion:
-                return "Discuti liberamente con gli altri giocatori...";
             
             case GameState.Voting:
                 return "Scrivi un messaggio...";
@@ -613,7 +588,6 @@
         {
             GameState.Lobby => "In Attesa",
             GameState.InProgress => "In Corso - Turni",
-            GameState.Discussion => "Discussione",
             GameState.Voting => "Votazione",
             GameState.Finished => "Finita",
             _ => "Sconosciuto"

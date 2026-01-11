@@ -213,7 +213,9 @@ public class GameService
 
         if (game.CurrentTurnIndex >= approvedPlayers.Count)
         {
-            game.State = GameState.Discussion;
+            // All turns completed, but stay in InProgress state
+            // Voting will start when all players are ready or host manually starts it
+            game.CurrentTurnIndex = approvedPlayers.Count; // Mark all turns as done
         }
 
         await _context.SaveChangesAsync();
@@ -223,10 +225,17 @@ public class GameService
     public async Task<bool> StartVotingAsync(string gameId)
     {
         var game = await GetGameByIdAsync(gameId);
-        if (game == null)
+        if (game == null || game.State != GameState.InProgress)
             return false;
 
         game.State = GameState.Voting;
+        
+        // Reset ready states for next round
+        foreach (var player in game.Players.Where(p => p.IsApproved))
+        {
+            player.IsReadyToVote = false;
+        }
+        
         await _context.SaveChangesAsync();
 
         return true;

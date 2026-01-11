@@ -165,19 +165,23 @@ public class GameHub : Hub
             var game = await _gameService.GetGameByIdAsync(gameId);
             await Clients.Group(gameId).SendAsync("GameUpdated", game);
             
-            if (game?.State == GameState.Discussion)
+            if (game?.State == GameState.InProgress)
             {
-                await _gameService.AddSystemMessageAsync(gameId, "Fase di discussione iniziata!");
-                await Clients.Group(gameId).SendAsync("DiscussionStarted");
-            }
-            else if (game?.State == GameState.InProgress)
-            {
-                // Notify all players about whose turn it is
-                var currentTurnPlayer = game.Players.Where(p => p.IsApproved).ToList().ElementAtOrDefault(game.CurrentTurnIndex);
-                if (currentTurnPlayer != null)
+                // Check if all turns are complete
+                var approvedPlayers = game.Players.Where(p => p.IsApproved).ToList();
+                if (game.CurrentTurnIndex >= approvedPlayers.Count)
                 {
-                    await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
-                    await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
+                    await _gameService.AddSystemMessageAsync(gameId, "Tutti i turni completati! Dichiaratevi pronti per votare.");
+                }
+                else
+                {
+                    // Notify all players about whose turn it is
+                    var currentTurnPlayer = approvedPlayers.ElementAtOrDefault(game.CurrentTurnIndex);
+                    if (currentTurnPlayer != null)
+                    {
+                        await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
+                        await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
+                    }
                 }
             }
         }
