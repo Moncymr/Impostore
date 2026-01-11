@@ -159,11 +159,11 @@ public class GameHub : Hub
             
             if (game?.ImpostorsWon == true)
             {
-                await _gameService.AddSystemMessageAsync(gameId, $"L'impostore {impostor?.Nickname} ha vinto! La parola era: {game.SecretWord}");
+                await _gameService.AddSystemMessageAsync(gameId, $"L'impostore {impostor?.Nickname ?? "sconosciuto"} ha vinto! La parola era: {game.SecretWord ?? "sconosciuta"}");
             }
             else
             {
-                await _gameService.AddSystemMessageAsync(gameId, $"I giocatori hanno vinto! L'impostore era {impostor?.Nickname}. La parola era: {game.SecretWord}");
+                await _gameService.AddSystemMessageAsync(gameId, $"I giocatori hanno vinto! L'impostore era {impostor?.Nickname ?? "sconosciuto"}. La parola era: {game.SecretWord ?? "sconosciuta"}");
             }
         }
     }
