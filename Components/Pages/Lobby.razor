@@ -41,6 +41,7 @@
                     @foreach (var player in approvedPlayers)
                     {
                         <div class="player-item approved">
+                            <span class="player-avatar">@player.Avatar</span>
                             <span class="player-name">@player.Nickname</span>
                             @if (player.IsHost)
                             {
@@ -51,6 +52,7 @@
                     @foreach (var player in pendingPlayers)
                     {
                         <div class="player-item pending">
+                            <span class="player-avatar">@player.Avatar</span>
                             <span class="player-name">@player.Nickname</span>
                             <span class="badge">In Attesa</span>
                             @if (isHost)
@@ -127,6 +129,7 @@
         
         isInitialized = true;
         nickname = Navigation.GetQueryParameter("nickname") ?? "";
+        var avatar = Navigation.GetQueryParameter("avatar") ?? "😀";
         var createGame = Navigation.GetQueryParameter("create") == "true";
         var gameCode = Navigation.GetQueryParameter("code");
 
@@ -140,7 +143,7 @@
         {
             if (createGame)
             {
-                game = await GameService.CreateGameAsync(playerId, nickname);
+                game = await GameService.CreateGameAsync(playerId, nickname, avatar);
                 gameId = game.Id;
                 isHost = true;
                 currentPlayer = game.Players.First();
@@ -156,7 +159,7 @@
                 }
                 
                 gameId = game.Id;
-                var (player, isNewPlayer) = await GameService.AddPlayerToGameAsync(game.Id, playerId, nickname);
+                var (player, isNewPlayer) = await GameService.AddPlayerToGameAsync(game.Id, playerId, nickname, avatar);
                 currentPlayer = player;
                 
                 if (currentPlayer == null)
