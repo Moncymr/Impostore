@@ -207,6 +207,10 @@
                         @foreach (var message in game.Messages.OrderBy(m => m.Timestamp))
                         {
                             <div class="chat-message @(message.IsSystemMessage ? "system" : "")">
+                                @if (!message.IsSystemMessage)
+                                {
+                                    <span class="message-avatar">@message.PlayerAvatar</span>
+                                }
                                 <span class="message-author">@message.PlayerName:</span>
                                 <span class="message-text">@message.Message</span>
                                 <span class="message-time">@message.Timestamp.ToString("HH:mm")</span>
@@ -236,6 +240,7 @@
                     @foreach (var player in game.Players.Where(p => p.IsApproved))
                     {
                         <div class="player-item @(player.Id == currentPlayer.Id ? "current" : "")">
+                            <span class="player-avatar">@player.Avatar</span>
                             <span class="player-name">@player.Nickname</span>
                             @if (player.IsHost)
                             {

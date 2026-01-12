@@ -19,6 +19,18 @@
                        value="@inputNickname"
                        placeholder="Il tuo nickname..."
                        maxlength="20" />
+                
+                <h3 class="mt-4">Scegli il tuo avatar</h3>
+                <div class="avatar-selection">
+                    @foreach (var avatarOption in availableAvatars)
+                    {
+                        <button class="avatar-option @(selectedAvatar == avatarOption ? "selected" : "")" 
+                                @onclick="() => SelectAvatar(avatarOption)">
+                            @avatarOption
+                        </button>
+                    }
+                </div>
+                
                 <button class="btn btn-primary btn-lg mt-3" 
                         @onclick="SetNickname"
                         disabled="@isButtonDisabled">
@@ -90,7 +102,16 @@
     private string gameCode = "";
     private string password = "";
     private string errorMessage = "";
-    private bool isButtonDisabled = true;
+    private string selectedAvatar = "😀";
+    
+    private readonly List<string> availableAvatars = new()
+    {
+        "😀", "😎", "🤓", "🥳", "🤠",
+        "👨", "👩", "🧔", "👨‍💼", "👩‍💼",
+        "🐶", "🐱", "🐭", "🐹", "🐰",
+        "🦊", "🐻", "🐼", "🐨", "🐯",
+        "🦁", "🐮", "🐷", "🐸", "🐵"
+    };
 
     protected override void OnInitialized()
     {
@@ -106,6 +127,17 @@
     {
         inputNickname = e.Value?.ToString() ?? "";
         isButtonDisabled = string.IsNullOrWhiteSpace(inputNickname);
+        
+        var storedAvatar = Navigation.GetQueryParameter("avatar");
+        if (!string.IsNullOrEmpty(storedAvatar))
+        {
+            selectedAvatar = storedAvatar;
+        }
+    }
+    
+    private void SelectAvatar(string avatar)
+    {
+        selectedAvatar = avatar;
     }
 
     private void SetNickname()
@@ -135,14 +167,14 @@
         }
 
         errorMessage = "";
-        Navigation.NavigateTo($"/lobby?nickname={Uri.EscapeDataString(nickname)}&create=true");
+        Navigation.NavigateTo($"/lobby?nickname={Uri.EscapeDataString(nickname)}&avatar={Uri.EscapeDataString(selectedAvatar)}&create=true");
     }
 
     private void JoinGame()
     {
         if (!string.IsNullOrWhiteSpace(gameCode))
         {
-            Navigation.NavigateTo($"/lobby?nickname={Uri.EscapeDataString(nickname)}&code={gameCode.ToUpper()}");
+            Navigation.NavigateTo($"/lobby?nickname={Uri.EscapeDataString(nickname)}&avatar={Uri.EscapeDataString(selectedAvatar)}&code={gameCode.ToUpper()}");
         }
     }
 }
