@@ -344,6 +344,15 @@ body {
     font-size: 0.9rem;
 }
 
+.refresh-button {
+    white-space: nowrap;
+    transition: all 0.3s ease;
+}
+
+.refresh-button:hover {
+    transform: rotate(180deg);
+}
+
 .game-main {
     display: grid;
     grid-template-columns: 1fr 350px;

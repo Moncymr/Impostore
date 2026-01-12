@@ -35,6 +35,11 @@
                 <div class="game-info">
                     <span class="game-code">Codice: @game.Code</span>
                     <span class="game-state">@GetStateLabel()</span>
+                    <button class="btn btn-sm btn-outline-primary refresh-button" 
+                            @onclick="RefreshGame"
+                            title="Aggiorna lo stato del gioco">
+                        🔄 Aggiorna Gioco
+                    </button>
                 </div>
             </div>
 
@@ -603,6 +608,28 @@
             GameState.Finished => "Finita",
             _ => "Sconosciuto"
         };
+    }
+
+    private async Task RefreshGame()
+    {
+        try
+        {
+            // Reload the game state from the server
+            game = await GameService.GetGameByIdAsync(gameId);
+            if (game != null)
+            {
+                currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
+                hasVoted = game.Votes.Any(v => v.VoterId == playerId);
+                await InvokeAsync(StateHasChanged);
+                
+                // Scroll chat to bottom after refresh
+                await ScrollChatToBottom();
+            }
+        }
+        catch
+        {
+            // Silently handle errors
+        }
     }
 
     public async ValueTask DisposeAsync()
