@@ -544,6 +544,9 @@
             case GameState.InProgress:
                 // During InProgress state, everyone can send messages (chat always active)
                 // This prevents issues where chat doesn't enable without refresh
+                // Note: Originally restricted to current turn player only, but changed due to
+                // SignalR synchronization issues that required manual refresh. User feedback
+                // indicated preference for always-active chat over fixing the refresh logic.
                 return true;
             
             case GameState.Voting:
