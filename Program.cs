@@ -24,8 +24,7 @@ builder.Services.AddScoped<GameService>();
 builder.Services.AddScoped<WordService>();
 
 var app = builder.Build();
-var port = Environment.GetEnvironmentVariable("PORT") ?? "8080";
-app.Urls.Add($"http://0.0.0.0:{port}");
+
 // Ensure database is created and seeded
 using (var scope = app.Services.CreateScope())
 {
@@ -37,11 +36,11 @@ using (var scope = app.Services.CreateScope())
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
-    app.UseExceptionHandler("/Error", createScopeForErrors: true);
+    app.UseExceptionHandler("/Error");
     // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
-app.UseStatusCodePagesWithReExecute("/not-found", createScopeForStatusCodePages: true);
+app.UseStatusCodePagesWithReExecute("/not-found");
 
 // Only use HTTPS redirection in development
 // Railway and other cloud platforms handle HTTPS at the proxy level
@@ -52,7 +51,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseAntiforgery();
 
-app.MapStaticAssets();
+app.UseStaticFiles();
 app.MapRazorComponents<App>()
     .AddInteractiveServerRenderMode();
 
