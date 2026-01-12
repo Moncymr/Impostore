@@ -203,7 +203,7 @@
                     <div class="chat-header">
                         <h3>💬 Chat</h3>
                         @* Show refresh button only when it's NOT the player's turn and game is in progress *@
-                        @if (game.State == GameState.InProgress && !CanSendMessage() && currentPlayer != null)
+                        @if (ShouldShowRefreshButton())
                         {
                             <button class="btn btn-sm btn-warning refresh-button" 
                                     @onclick="RefreshGame"
@@ -519,6 +519,13 @@
         return null;
     }
 
+    private bool ShouldShowRefreshButton()
+    {
+        return game?.State == GameState.InProgress 
+            && !CanSendMessage() 
+            && currentPlayer != null;
+    }
+
     private bool CanSendMessage()
     {
         if (game == null || currentPlayer == null)
@@ -626,14 +633,15 @@
                 currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
                 hasVoted = game.Votes.Any(v => v.VoterId == playerId);
                 
-                // Force UI update by calling StateHasChanged multiple times
-                // This ensures the chat input's disabled state is properly re-evaluated
+                // Force a complete UI refresh
+                // The double StateHasChanged with a small delay is necessary because:
+                // 1. First call updates the game state
+                // 2. Delay allows the render cycle to complete
+                // 3. Second call ensures all computed bindings (like chat input disabled state) are re-evaluated
+                // This pattern is specifically needed for the chat input's disabled attribute
+                // which depends on CanSendMessage() -> GetCurrentTurnPlayer() -> game.CurrentTurnIndex
                 await InvokeAsync(StateHasChanged);
-                
-                // Small delay to ensure the UI has time to update
                 await Task.Delay(100);
-                
-                // Trigger another state change to ensure all bindings are updated
                 await InvokeAsync(StateHasChanged);
                 
                 // Scroll chat to bottom after refresh
