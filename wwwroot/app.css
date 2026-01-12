@@ -347,12 +347,11 @@ body {
 .refresh-button {
     white-space: nowrap;
     transition: all 0.3s ease;
+    font-size: 0.85rem;
 }
 
 .refresh-button:hover {
     transform: scale(1.05);
-    background-color: #667eea;
-    color: white;
 }
 
 .game-main {
@@ -468,11 +467,17 @@ body {
 .chat-header {
     padding: 1rem;
     border-bottom: 2px solid #e9ecef;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.5rem;
+    flex-wrap: wrap;
 }
 
 .chat-header h3 {
     margin: 0;
     font-size: 1.2rem;
+    flex: 1;
 }
 
 .chat-messages {
