@@ -1,0 +1,218 @@
+@inject IJSRuntime JSRuntime
+@implements IAsyncDisposable
+
+<div class="voice-chat-panel">
+    <div class="voice-chat-header">
+        <h4>🎤 Chat Vocale</h4>
+        <span class="voice-status @(isConnected ? "connected" : "disconnected")">
+            @(isConnected ? "Connesso" : "Disconnesso")
+        </span>
+    </div>
+    
+    <div class="voice-controls">
+        @if (isConnected)
+        {
+            <button class="btn @(isMuted ? "btn-danger" : "btn-success")" 
+                    @onclick="ToggleMute"
+                    title="@(isMuted ? "Attiva microfono" : "Disattiva microfono")">
+                @if (isMuted)
+                {
+                    <span>🔇 Muto</span>
+                }
+                else
+                {
+                    <span>🎤 Attivo</span>
+                }
+            </button>
+            
+            <button class="btn btn-danger ms-2" 
+                    @onclick="DisconnectVoice"
+                    title="Disconnetti dalla chat vocale">
+                📵 Disconnetti
+            </button>
+        }
+        else
+        {
+            <button class="btn btn-primary" 
+                    @onclick="ConnectVoice"
+                    title="Connetti alla chat vocale">
+                📞 Connetti
+            </button>
+        }
+    </div>
+    
+    @if (isConnected)
+    {
+        <div class="voice-participants mt-3">
+            <h5>Partecipanti Vocali:</h5>
+            <div class="participants-list">
+                @foreach (var participant in participants)
+                {
+                    <div class="participant-item">
+                        <span class="participant-icon">
+                            @(participant.IsSpeaking ? "🔊" : "🔇")
+                        </span>
+                        <span class="participant-name">@participant.Name</span>
+                        @if (participant.IsMuted)
+                        {
+                            <span class="badge bg-danger">Muto</span>
+                        }
+                    </div>
+                }
+            </div>
+        </div>
+    }
+    
+    @if (!string.IsNullOrEmpty(errorMessage))
+    {
+        <div class="alert alert-warning mt-2">
+            @errorMessage
+        </div>
+    }
+</div>
+
+@code {
+    [Parameter]
+    public string GameId { get; set; } = "";
+    
+    [Parameter]
+    public string PlayerId { get; set; } = "";
+    
+    [Parameter]
+    public string PlayerName { get; set; } = "";
+    
+    private bool isConnected = false;
+    private bool isMuted = true;
+    private string errorMessage = "";
+    private List<VoiceParticipant> participants = new();
+    private DotNetObjectReference<VoiceChat>? objRef;
+    
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+        {
+            objRef = DotNetObjectReference.Create(this);
+            await JSRuntime.InvokeVoidAsync("voiceChat.initialize", objRef);
+        }
+    }
+    
+    private async Task ConnectVoice()
+    {
+        try
+        {
+            errorMessage = "";
+            var result = await JSRuntime.InvokeAsync<bool>("voiceChat.connect", GameId, PlayerId, PlayerName);
+            if (result)
+            {
+                isConnected = true;
+                isMuted = true; // Start muted to match JavaScript initial state
+                participants.Add(new VoiceParticipant { Name = PlayerName, IsMuted = true });
+            }
+            else
+            {
+                errorMessage = "Impossibile connettersi alla chat vocale. Verifica i permessi del microfono.";
+            }
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore: {ex.Message}";
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    private async Task DisconnectVoice()
+    {
+        try
+        {
+            await JSRuntime.InvokeVoidAsync("voiceChat.disconnect");
+            isConnected = false;
+            isMuted = true;
+            participants.Clear();
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante la disconnessione: {ex.Message}";
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    private async Task ToggleMute()
+    {
+        try
+        {
+            isMuted = !isMuted;
+            await JSRuntime.InvokeVoidAsync("voiceChat.toggleMute", isMuted);
+            
+            // Update current player mute status in participants
+            var currentParticipant = participants.FirstOrDefault(p => p.Name == PlayerName);
+            if (currentParticipant != null)
+            {
+                currentParticipant.IsMuted = isMuted;
+            }
+            
+            await InvokeAsync(StateHasChanged);
+        }
+        catch (Exception ex)
+        {
+            errorMessage = $"Errore durante il cambio di stato: {ex.Message}";
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    [JSInvokable]
+    public async Task OnParticipantJoined(string participantName)
+    {
+        if (!participants.Any(p => p.Name == participantName))
+        {
+            participants.Add(new VoiceParticipant { Name = participantName, IsMuted = true });
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    [JSInvokable]
+    public async Task OnParticipantLeft(string participantName)
+    {
+        participants.RemoveAll(p => p.Name == participantName);
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    [JSInvokable]
+    public async Task OnParticipantSpeaking(string participantName, bool isSpeaking)
+    {
+        var participant = participants.FirstOrDefault(p => p.Name == participantName);
+        if (participant != null)
+        {
+            participant.IsSpeaking = isSpeaking;
+            await InvokeAsync(StateHasChanged);
+        }
+    }
+    
+    [JSInvokable]
+    public async Task OnError(string error)
+    {
+        errorMessage = error;
+        await InvokeAsync(StateHasChanged);
+    }
+    
+    public async ValueTask DisposeAsync()
+    {
+        if (isConnected)
+        {
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("voiceChat.disconnect");
+            }
+            catch { }
+        }
+        objRef?.Dispose();
+    }
+    
+    private class VoiceParticipant
+    {
+        public string Name { get; set; } = "";
+        public bool IsMuted { get; set; } = true;
+        public bool IsSpeaking { get; set; } = false;
+    }
+}

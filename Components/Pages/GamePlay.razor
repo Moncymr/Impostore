@@ -4,6 +4,7 @@
 @inject GameService GameService
 @inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
+@using ImpostoreGame.Components.Shared
 
 <PageTitle>Partita - Impostore</PageTitle>
 
@@ -202,6 +203,15 @@
                 <div class="chat-section">
                     <div class="chat-header">
                         <h3>💬 Chat</h3>
+                        @* Show refresh button only when player cannot send messages (waiting for turn) *@
+                        @if (ShouldShowRefreshButton())
+                        {
+                            <button class="btn btn-sm btn-warning refresh-button" 
+                                    @onclick="RefreshGame"
+                                    title="Aggiorna e abilita la chat se è il tuo turno">
+                                ⚡ Abilitami a giocare
+                            </button>
+                        }
                     </div>
                     <div class="chat-messages" @ref="chatContainer">
                         @foreach (var message in game.Messages.OrderBy(m => m.Timestamp))
@@ -253,6 +263,16 @@
                         </div>
                     }
                 </div>
+                
+                @* Voice Chat Component *@
+                @if (game.State == GameState.InProgress || game.State == GameState.Discussion || game.State == GameState.Voting)
+                {
+                    <div class="mt-3">
+                        <VoiceChat GameId="@gameId" 
+                                   PlayerId="@playerId" 
+                                   PlayerName="@currentPlayer.Nickname" />
+                    </div>
+                }
             </div>
         </div>
     }
@@ -510,6 +530,12 @@
         return null;
     }
 
+    private bool ShouldShowRefreshButton()
+    {
+        // Chat is now always active during gameplay, so refresh button is not needed
+        return false;
+    }
+
     private bool CanSendMessage()
     {
         if (game == null || currentPlayer == null)
@@ -527,9 +553,12 @@
                 return false;
             
             case GameState.InProgress:
-                // During InProgress state (turn-based phase), only the current turn player can send messages
-                var currentTurnPlayer = GetCurrentTurnPlayer();
-                return currentTurnPlayer?.Id == currentPlayer.Id;
+                // During InProgress state, everyone can send messages (chat always active)
+                // This prevents issues where chat doesn't enable without refresh
+                // Note: Originally restricted to current turn player only, but changed due to
+                // SignalR synchronization issues that required manual refresh. User feedback
+                // indicated preference for always-active chat over fixing the refresh logic.
+                return true;
             
             case GameState.Voting:
                 // During voting phase, everyone can send messages
@@ -559,11 +588,8 @@
                 return "La partita sta iniziando...";
             
             case GameState.InProgress:
-                var currentTurnPlayer = GetCurrentTurnPlayer();
-                if (currentTurnPlayer?.Id == currentPlayer.Id)
-                    return "È il tuo turno! Scrivi il tuo messaggio...";
-                else
-                    return $"È il turno di {currentTurnPlayer?.Nickname}. Attendi il tuo turno...";
+                // Chat is always active during gameplay
+                return "Scrivi un messaggio...";
             
             case GameState.Voting:
                 return "Scrivi un messaggio...";
@@ -603,6 +629,40 @@
             GameState.Finished => "Finita",
             _ => "Sconosciuto"
         };
+    }
+
+    private async Task RefreshGame()
+    {
+        try
+        {
+            // Reload the game state from the server
+            var updatedGame = await GameService.GetGameByIdAsync(gameId);
+            if (updatedGame != null)
+            {
+                game = updatedGame;
+                currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
+                hasVoted = game.Votes.Any(v => v.VoterId == playerId);
+                
+                // Force a complete UI refresh
+                // The double StateHasChanged with a small delay is necessary because:
+                // 1. First call updates the game state
+                // 2. Delay allows the render cycle to complete
+                // 3. Second call ensures all computed bindings (like chat input disabled state) are re-evaluated
+                // This pattern is specifically needed for the chat input's disabled attribute
+                // which depends on CanSendMessage() -> GetCurrentTurnPlayer() -> game.CurrentTurnIndex
+                await InvokeAsync(StateHasChanged);
+                await Task.Delay(100);
+                await InvokeAsync(StateHasChanged);
+                
+                // Scroll chat to bottom after refresh
+                await ScrollChatToBottom();
+            }
+        }
+        catch (Exception)
+        {
+            // Game state refresh failed - page will continue to work with current state
+            // SignalR will continue to provide automatic updates
+        }
     }
 
     public async ValueTask DisposeAsync()
