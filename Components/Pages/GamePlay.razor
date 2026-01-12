@@ -521,9 +521,8 @@
 
     private bool ShouldShowRefreshButton()
     {
-        return game?.State == GameState.InProgress 
-            && !CanSendMessage() 
-            && currentPlayer != null;
+        // Chat is now always active during gameplay, so refresh button is not needed
+        return false;
     }
 
     private bool CanSendMessage()
@@ -543,9 +542,9 @@
                 return false;
             
             case GameState.InProgress:
-                // During InProgress state (turn-based phase), only the current turn player can send messages
-                var currentTurnPlayer = GetCurrentTurnPlayer();
-                return currentTurnPlayer?.Id == currentPlayer.Id;
+                // During InProgress state, everyone can send messages (chat always active)
+                // This prevents issues where chat doesn't enable without refresh
+                return true;
             
             case GameState.Voting:
                 // During voting phase, everyone can send messages
@@ -575,11 +574,8 @@
                 return "La partita sta iniziando...";
             
             case GameState.InProgress:
-                var currentTurnPlayer = GetCurrentTurnPlayer();
-                if (currentTurnPlayer?.Id == currentPlayer.Id)
-                    return "È il tuo turno! Scrivi il tuo messaggio...";
-                else
-                    return $"È il turno di {currentTurnPlayer?.Nickname}. Attendi il tuo turno...";
+                // Chat is always active during gameplay
+                return "Scrivi un messaggio...";
             
             case GameState.Voting:
                 return "Scrivi un messaggio...";
