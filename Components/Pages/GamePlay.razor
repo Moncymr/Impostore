@@ -615,9 +615,10 @@
         try
         {
             // Reload the game state from the server
-            game = await GameService.GetGameByIdAsync(gameId);
-            if (game != null)
+            var updatedGame = await GameService.GetGameByIdAsync(gameId);
+            if (updatedGame != null)
             {
+                game = updatedGame;
                 currentPlayer = game.Players.FirstOrDefault(p => p.Id == playerId);
                 hasVoted = game.Votes.Any(v => v.VoterId == playerId);
                 await InvokeAsync(StateHasChanged);
