@@ -626,9 +626,10 @@
                 await ScrollChatToBottom();
             }
         }
-        catch
+        catch (Exception)
         {
-            // Silently handle errors
+            // Game state refresh failed - page will continue to work with current state
+            // SignalR will continue to provide automatic updates
         }
     }
 
