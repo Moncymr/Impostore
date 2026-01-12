@@ -265,7 +265,7 @@
                 </div>
                 
                 @* Voice Chat Component *@
-                @if (game.State != GameState.Lobby && game.State != GameState.Finished)
+                @if (game.State == GameState.InProgress || game.State == GameState.Discussion || game.State == GameState.Voting)
                 {
                     <div class="mt-3">
                         <VoiceChat GameId="@gameId" 

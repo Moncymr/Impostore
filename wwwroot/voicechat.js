@@ -96,16 +96,20 @@ window.voiceChat = (function () {
         let speakingTimeout = null;
         let isSpeaking = false;
 
+        // Threshold for detecting speech - adjust based on microphone sensitivity
+        // Lower values = more sensitive, higher values = less sensitive
+        const SPEAKING_THRESHOLD = 20;
+        
+        // Timeout before marking user as not speaking (in milliseconds)
+        const SPEAKING_TIMEOUT_MS = 500;
+
         function checkAudioLevel() {
             if (!isConnected) return;
 
             analyser.getByteFrequencyData(dataArray);
             const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
 
-            // Threshold for detecting speech (adjust as needed)
-            const speakingThreshold = 20;
-
-            if (average > speakingThreshold && !isMuted) {
+            if (average > SPEAKING_THRESHOLD && !isMuted) {
                 if (!isSpeaking) {
                     isSpeaking = true;
                     if (dotNetReference) {
@@ -120,7 +124,7 @@ window.voiceChat = (function () {
                     if (dotNetReference) {
                         dotNetReference.invokeMethodAsync('OnParticipantSpeaking', playerName, false);
                     }
-                }, 500);
+                }, SPEAKING_TIMEOUT_MS);
             }
 
             requestAnimationFrame(checkAudioLevel);

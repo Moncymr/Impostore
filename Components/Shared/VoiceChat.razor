@@ -105,8 +105,8 @@
             if (result)
             {
                 isConnected = true;
-                isMuted = false;
-                participants.Add(new VoiceParticipant { Name = PlayerName, IsMuted = false });
+                isMuted = true; // Start muted to match JavaScript initial state
+                participants.Add(new VoiceParticipant { Name = PlayerName, IsMuted = true });
             }
             else
             {
