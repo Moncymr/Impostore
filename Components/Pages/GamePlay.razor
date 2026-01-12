@@ -202,7 +202,7 @@
                 <div class="chat-section">
                     <div class="chat-header">
                         <h3>💬 Chat</h3>
-                        @* Show refresh button only when it's NOT the player's turn and game is in progress *@
+                        @* Show refresh button only when player cannot send messages (waiting for turn) *@
                         @if (ShouldShowRefreshButton())
                         {
                             <button class="btn btn-sm btn-warning refresh-button" 
