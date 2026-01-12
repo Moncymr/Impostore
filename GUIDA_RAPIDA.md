@@ -20,7 +20,7 @@ Una guida veloce per iniziare a giocare a Impostore in pochi minuti!
 
 **Per unirti:**
 1. Inserisci il tuo nickname
-2. Scegli un avatar  
+2. Scegli un avatar
 3. Clicca "Continua"
 4. Inserisci il codice partita
 5. Clicca "🚪 Unisciti alla Partita"
