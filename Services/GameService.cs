@@ -63,7 +63,11 @@ public class GameService
 
     public async Task<(Player? player, bool isNewPlayer)> AddPlayerToGameAsync(string gameId, string playerId, string nickname, string avatar = "😀")
     {
-        var game = await GetGameByIdAsync(gameId);
+        // Use a tracked query to properly add the player to the game
+        var game = await _context.Games
+            .Include(g => g.Players)
+            .FirstOrDefaultAsync(g => g.Id == gameId);
+            
         if (game == null || game.State != GameState.Lobby)
             return (null, false);
 

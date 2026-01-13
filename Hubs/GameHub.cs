@@ -49,6 +49,9 @@ public class GameHub : Hub
         
         // Notify the host about the new player join request
         await NotifyHostAboutPlayerJoin(game, gameId, player);
+        
+        // Send updated game state to ALL players so everyone sees the complete player list
+        await Clients.Group(gameId).SendAsync("GameUpdated", game);
     }
 
     public async Task LeaveGameGroup(string gameId)
@@ -78,6 +81,13 @@ public class GameHub : Hub
         if (isNewPlayer)
         {
             await NotifyHostAboutPlayerJoin(game, game.Id, player);
+            
+            // Send updated game state to ALL players so everyone sees the complete player list
+            var updatedGame = await _gameService.GetGameByIdAsync(game.Id);
+            if (updatedGame != null)
+            {
+                await Clients.Group(game.Id).SendAsync("GameUpdated", updatedGame);
+            }
         }
         
         await Clients.Caller.SendAsync("JoinRequestSent", game.Id);
