@@ -141,16 +141,20 @@ public class GameHub : Hub
             }
             
             // Notify all players about whose turn it is
-            var currentTurnPlayer = game?.Players.Where(p => p.IsApproved).ToList().ElementAtOrDefault(game.CurrentTurnIndex);
-            if (currentTurnPlayer != null)
+            if (game != null)
             {
-                await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
-                
-                // Add and broadcast turn notification message
-                var turnMessage = await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
-                if (turnMessage != null)
+                var approvedPlayers = game.Players.Where(p => p.IsApproved).ToList();
+                var currentTurnPlayer = approvedPlayers.ElementAtOrDefault(game.CurrentTurnIndex);
+                if (currentTurnPlayer != null)
                 {
-                    await Clients.Group(gameId).SendAsync("ReceiveMessage", turnMessage);
+                    await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
+                    
+                    // Add and broadcast turn notification message
+                    var turnMessage = await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
+                    if (turnMessage != null)
+                    {
+                        await Clients.Group(gameId).SendAsync("ReceiveMessage", turnMessage);
+                    }
                 }
             }
         }
