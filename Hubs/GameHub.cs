@@ -90,9 +90,9 @@ public class GameHub : Hub
         if (host == null)
             return;
             
-        // Notify all players in the game group about the new player join request
+        // Notify all players in the game group except the caller about the new player join request
         // The client-side will handle showing approval UI only to the host
-        await Clients.Group(gameId).SendAsync("PlayerJoinRequest", player);
+        await Clients.OthersInGroup(gameId).SendAsync("PlayerJoinRequest", player);
     }
 
     public async Task ApprovePlayer(string gameId, string playerId)
