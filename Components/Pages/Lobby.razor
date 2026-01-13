@@ -118,6 +118,7 @@
     private bool isInitialized = false;
     private string errorMessage = "";
     private string statusMessage = "";
+    private System.Threading.Timer? refreshTimer;
 
     private List<Player> approvedPlayers => game?.Players.Where(p => p.IsApproved).ToList() ?? new();
     private List<Player> pendingPlayers => game?.Players.Where(p => !p.IsApproved).ToList() ?? new();
@@ -194,6 +195,7 @@
             if (isHost)
             {
                 await InitializeSignalR();
+                StartRefreshTimer();
             }
             
             isLoading = false;
@@ -293,8 +295,47 @@
         }
     }
 
+    private void StartRefreshTimer()
+    {
+        // Only start timer for host in lobby
+        if (isHost && game?.State == GameState.Lobby)
+        {
+            refreshTimer = new System.Threading.Timer(async _ =>
+            {
+                try
+                {
+                    await RefreshGameState();
+                }
+                catch
+                {
+                    // Ignore errors in background refresh
+                }
+            }, null, TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3));
+        }
+    }
+
+    private async Task RefreshGameState()
+    {
+        if (!string.IsNullOrEmpty(gameId) && isHost && game?.State == GameState.Lobby)
+        {
+            var updatedGame = await GameService.GetGameByIdAsync(gameId);
+            if (updatedGame != null)
+            {
+                game = updatedGame;
+                await InvokeAsync(StateHasChanged);
+            }
+        }
+    }
+
     public async ValueTask DisposeAsync()
     {
+        // Dispose the refresh timer
+        if (refreshTimer != null)
+        {
+            await refreshTimer.DisposeAsync();
+            refreshTimer = null;
+        }
+
         if (hubConnection != null && !string.IsNullOrEmpty(gameId))
         {
             try
