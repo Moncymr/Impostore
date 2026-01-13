@@ -7,7 +7,7 @@ If you're seeing this error when building or publishing the project, it means ei
 ### Quick Fix: Use the Automated Script
 
 **Windows:**
-```bash
+```cmd
 fix-build.bat
 ```
 
@@ -52,15 +52,31 @@ The script will automatically clean cache, verify configuration, and rebuild the
 
 ### Solution 3: Command Line Clean
 
-Open a command prompt in the project folder and run:
+**Windows Command Prompt:**
+
+```cmd
+REM Clean the project
+dotnet clean
+
+REM Delete obj and bin folders
+rmdir /s /q obj
+rmdir /s /q bin
+
+REM Restore dependencies
+dotnet restore
+
+REM Build the project
+dotnet build
+```
+
+**Linux/Mac/PowerShell:**
 
 ```bash
 # Clean the project
 dotnet clean
 
 # Delete obj and bin folders
-rmdir /s /q obj
-rmdir /s /q bin
+rm -rf obj bin
 
 # Restore dependencies
 dotnet restore
