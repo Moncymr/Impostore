@@ -1038,7 +1038,7 @@ body {
     }
     
     .chat-messages {
-        max-height: 250px;
+        max-height: min(250px, 30vh); /* Flexible height for different screen sizes */
         order: 1; /* Messages come after input */
     }
     
