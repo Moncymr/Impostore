@@ -2,6 +2,7 @@
 @rendermode InteractiveServer
 @inject NavigationManager Navigation
 @inject GameService GameService
+@inject IJSRuntime JSRuntime
 @implements IAsyncDisposable
 
 <PageTitle>Lobby - Impostore</PageTitle>
@@ -32,7 +33,14 @@
             <h1>🎮 Lobby Partita</h1>
             <div class="game-code">
                 <h2>Codice: <span class="code">@game.Code</span></h2>
-                <p class="code-info">Condividi questo codice con i tuoi amici!</p>
+                <button class="btn btn-outline-primary btn-sm mt-2" @onclick="CopyGameCode">
+                    📋 Copia Codice
+                </button>
+                @if (codeCopied)
+                {
+                    <span class="text-success ms-2">✓ Copiato!</span>
+                }
+                <p class="code-info mt-2">Condividi questo codice con i tuoi amici!</p>
             </div>
 
             <div class="players-section">
@@ -87,7 +95,14 @@
                     </button>
                     @if (approvedPlayers.Count < 3)
                     {
-                        <p class="text-muted mt-2">Minimo 3 giocatori per iniziare</p>
+                        <div class="alert alert-warning mt-3" role="alert">
+                            <strong>⚠️ Attenzione:</strong> Servono almeno <strong>3 giocatori</strong> approvati per iniziare.
+                            <br><small>Giocatori attuali: @approvedPlayers.Count</small>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-success mt-2">✓ Pronti per iniziare! (@approvedPlayers.Count giocatori)</p>
                     }
                 }
                 else
@@ -120,6 +135,7 @@
     private string statusMessage = "";
     private System.Threading.Timer? refreshTimer;
     private bool isRefreshing = false;
+    private bool codeCopied = false;
 
     private List<Player> approvedPlayers => game?.Players.Where(p => p.IsApproved).ToList() ?? new();
     private List<Player> pendingPlayers => game?.Players.Where(p => !p.IsApproved).ToList() ?? new();
@@ -296,6 +312,21 @@
         if (hubConnection != null && !string.IsNullOrEmpty(gameId))
         {
             await hubConnection.SendAsync("StartGame", gameId);
+        }
+    }
+
+    private async Task CopyGameCode()
+    {
+        if (game != null)
+        {
+            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", game.Code);
+            codeCopied = true;
+            StateHasChanged();
+            
+            // Reset the "copied" message after 2 seconds
+            await Task.Delay(2000);
+            codeCopied = false;
+            StateHasChanged();
         }
     }
 
