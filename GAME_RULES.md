@@ -5,7 +5,7 @@
 **Impostore** è un gioco online multiplayer in tempo reale basato su deduzione sociale, simile a giochi come "Spyfall" o "Among Us" in formato testuale. I giocatori devono identificare l'impostore nascosto tra loro attraverso la discussione e l'osservazione.
 
 ### Tecnologie Utilizzate
-- **Frontend/Backend**: Blazor Server (.NET 10)
+- **Frontend/Backend**: Blazor Server (.NET 8)
 - **Comunicazione Real-time**: SignalR
 - **Database**: Entity Framework Core con In-Memory Database
 - **UI**: Bootstrap 5 + CSS personalizzato

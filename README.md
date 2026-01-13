@@ -8,8 +8,8 @@ Impostore è un gioco di deduzione sociale dove un giocatore è l'impostore che 
 
 ## 🚀 Tecnologie Utilizzate
 
-- **Frontend**: Blazor Server (.NET 10)
-- **Backend**: ASP.NET Core 10
+- **Frontend**: Blazor Server (.NET 8)
+- **Backend**: ASP.NET Core 8
 - **Realtime**: SignalR
 - **Database**: Entity Framework Core con In-Memory Database
 - **UI**: Bootstrap 5 + CSS personalizzato
@@ -79,7 +79,7 @@ Impostore è un gioco di deduzione sociale dove un giocatore è l'impostore che 
 ## 🛠️ Installazione e Avvio
 
 ### Prerequisiti
-- .NET 10 SDK
+- .NET 8 SDK
 
 ### Comandi
 
