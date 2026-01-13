@@ -90,13 +90,9 @@ public class GameHub : Hub
         if (host == null)
             return;
             
-        // Notify only the host about the new player join request
-        if (!string.IsNullOrEmpty(host.ConnectionId))
-        {
-            await Clients.Client(host.ConnectionId).SendAsync("PlayerJoinRequest", player);
-        }
-        // Note: If host ConnectionId is not set, we skip the notification
-        // The host will see the player when they refresh or when the player is approved
+        // Notify all players in the game group about the new player join request
+        // The client-side will handle showing approval UI only to the host
+        await Clients.Group(gameId).SendAsync("PlayerJoinRequest", player);
     }
 
     public async Task ApprovePlayer(string gameId, string playerId)
