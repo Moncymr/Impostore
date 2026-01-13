@@ -273,6 +273,7 @@
         {
             await hubConnection.SendAsync("ApprovePlayer", gameId, playerIdToApprove);
             game = await GameService.GetGameByIdAsync(gameId);
+            await InvokeAsync(StateHasChanged);
         }
     }
 
@@ -282,6 +283,7 @@
         {
             await hubConnection.SendAsync("RejectPlayer", gameId, playerIdToReject);
             game = await GameService.GetGameByIdAsync(gameId);
+            await InvokeAsync(StateHasChanged);
         }
     }
 
