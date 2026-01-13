@@ -21,7 +21,7 @@
         <div class="error-container">
             <h2>⚠️ Errore</h2>
             <p>@errorMessage</p>
-            <button class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/")'>
+            <button type="button" class="btn btn-primary" @onclick='() => Navigation.NavigateTo("/")'>
                 Torna alla Home
             </button>
         </div>
@@ -58,10 +58,10 @@
                             @if (isHost)
                             {
                                 <div class="actions">
-                                    <button class="btn btn-sm btn-success" @onclick="() => ApprovePlayer(player.Id)">
+                                    <button type="button" class="btn btn-sm btn-success" @onclick="() => ApprovePlayer(player.Id)">
                                         ✓ Accetta
                                     </button>
-                                    <button class="btn btn-sm btn-danger" @onclick="() => RejectPlayer(player.Id)">
+                                    <button type="button" class="btn btn-sm btn-danger" @onclick="() => RejectPlayer(player.Id)">
                                         ✗ Rifiuta
                                     </button>
                                 </div>
@@ -79,7 +79,8 @@
             <div class="lobby-actions">
                 @if (isHost)
                 {
-                    <button class="btn btn-success btn-lg" 
+                    <button type="button" 
+                            class="btn btn-success btn-lg" 
                             @onclick="StartGame"
                             disabled="@(approvedPlayers.Count < 3)">
                         🚀 Inizia Partita
