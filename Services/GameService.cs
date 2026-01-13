@@ -152,7 +152,8 @@ public class GameService
         }
         
         game.State = GameState.InProgress;
-        game.CurrentTurnIndex = 0;
+        // Randomize starting turn - don't always start from host
+        game.CurrentTurnIndex = Random.Shared.Next(approvedPlayers.Count);
 
         await _context.SaveChangesAsync();
 

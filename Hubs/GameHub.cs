@@ -305,9 +305,22 @@ public class GameHub : Hub
         var success = await _gameService.ResetGameForRematchAsync(gameId);
         if (success)
         {
-            var game = await _gameService.GetGameByIdAsync(gameId);
-            await Clients.Group(gameId).SendAsync("RematchStarted", game);
-            await _gameService.AddSystemMessageAsync(gameId, "Nuova partita iniziata! Tutti i giocatori sono stati riportati alla lobby.");
+            // Automatically start the new game instead of going back to lobby
+            var startSuccess = await _gameService.StartGameAsync(gameId);
+            if (startSuccess)
+            {
+                var game = await _gameService.GetGameByIdAsync(gameId);
+                await Clients.Group(gameId).SendAsync("RematchStarted", game);
+                await _gameService.AddSystemMessageAsync(gameId, "Nuova partita iniziata!");
+                
+                // Notify all players about whose turn it is
+                var currentTurnPlayer = game?.Players.Where(p => p.IsApproved).ToList().ElementAtOrDefault(game.CurrentTurnIndex);
+                if (currentTurnPlayer != null)
+                {
+                    await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
+                    await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
+                }
+            }
         }
     }
 
