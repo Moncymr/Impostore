@@ -119,6 +119,7 @@
     private string errorMessage = "";
     private string statusMessage = "";
     private System.Threading.Timer? refreshTimer;
+    private bool isRefreshing = false;
 
     private List<Player> approvedPlayers => game?.Players.Where(p => p.IsApproved).ToList() ?? new();
     private List<Player> pendingPlayers => game?.Players.Where(p => !p.IsApproved).ToList() ?? new();
@@ -300,30 +301,43 @@
         // Only start timer for host in lobby
         if (isHost && game?.State == GameState.Lobby)
         {
-            refreshTimer = new System.Threading.Timer(async _ =>
+            refreshTimer = new System.Threading.Timer(_ =>
             {
-                try
+                // Use Task.Run to avoid blocking and handle async properly
+                _ = Task.Run(async () =>
                 {
-                    await RefreshGameState();
-                }
-                catch
-                {
-                    // Ignore errors in background refresh
-                }
+                    try
+                    {
+                        await RefreshGameState();
+                    }
+                    catch
+                    {
+                        // Ignore errors in background refresh
+                    }
+                });
             }, null, TimeSpan.FromSeconds(3), TimeSpan.FromSeconds(3));
         }
     }
 
     private async Task RefreshGameState()
     {
-        if (!string.IsNullOrEmpty(gameId) && isHost && game?.State == GameState.Lobby)
+        // Prevent concurrent executions
+        if (isRefreshing || string.IsNullOrEmpty(gameId) || !isHost || game?.State != GameState.Lobby)
+            return;
+
+        try
         {
+            isRefreshing = true;
             var updatedGame = await GameService.GetGameByIdAsync(gameId);
             if (updatedGame != null)
             {
                 game = updatedGame;
                 await InvokeAsync(StateHasChanged);
             }
+        }
+        finally
+        {
+            isRefreshing = false;
         }
     }
 
