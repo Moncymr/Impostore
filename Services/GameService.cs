@@ -61,6 +61,15 @@ public class GameService
             .FirstOrDefaultAsync(g => g.Id == gameId);
     }
 
+    private async Task<Game?> GetTrackedGameByIdAsync(string gameId)
+    {
+        return await _context.Games
+            .Include(g => g.Players)
+            .Include(g => g.Messages)
+            .Include(g => g.Votes)
+            .FirstOrDefaultAsync(g => g.Id == gameId);
+    }
+
     public async Task<(Player? player, bool isNewPlayer)> AddPlayerToGameAsync(string gameId, string playerId, string nickname, string avatar = "😀")
     {
         // Use a tracked query to properly add the player to the game
@@ -130,7 +139,11 @@ public class GameService
 
     public async Task<bool> StartGameAsync(string gameId)
     {
-        var game = await GetGameByIdAsync(gameId);
+        // Use a tracked query to properly update the game state
+        var game = await _context.Games
+            .Include(g => g.Players)
+            .FirstOrDefaultAsync(g => g.Id == gameId);
+            
         if (game == null || game.State != GameState.Lobby)
             return false;
 
@@ -168,7 +181,7 @@ public class GameService
 
     public async Task<bool> AddMessageAsync(string gameId, string playerId, string message)
     {
-        var game = await GetGameByIdAsync(gameId);
+        var game = await GetTrackedGameByIdAsync(gameId);
         if (game == null)
             return false;
 
@@ -193,7 +206,7 @@ public class GameService
 
     public async Task<bool> AddSystemMessageAsync(string gameId, string message)
     {
-        var game = await GetGameByIdAsync(gameId);
+        var game = await GetTrackedGameByIdAsync(gameId);
         if (game == null)
             return false;
 
@@ -214,7 +227,7 @@ public class GameService
 
     public async Task<bool> MoveToNextTurnAsync(string gameId)
     {
-        var game = await GetGameByIdAsync(gameId);
+        var game = await GetTrackedGameByIdAsync(gameId);
         if (game == null || game.State != GameState.InProgress)
             return false;
 
@@ -244,7 +257,7 @@ public class GameService
 
     public async Task<bool> StartVotingAsync(string gameId)
     {
-        var game = await GetGameByIdAsync(gameId);
+        var game = await GetTrackedGameByIdAsync(gameId);
         if (game == null || game.State != GameState.InProgress)
             return false;
 
@@ -263,7 +276,7 @@ public class GameService
 
     public async Task<bool> CastVoteAsync(string gameId, string voterId, string targetPlayerId)
     {
-        var game = await GetGameByIdAsync(gameId);
+        var game = await GetTrackedGameByIdAsync(gameId);
         if (game == null || game.State != GameState.Voting)
             return false;
 
@@ -287,7 +300,7 @@ public class GameService
 
     public async Task<bool> FinishGameAsync(string gameId)
     {
-        var game = await GetGameByIdAsync(gameId);
+        var game = await GetTrackedGameByIdAsync(gameId);
         if (game == null || game.State != GameState.Voting)
             return false;
 
@@ -342,7 +355,7 @@ public class GameService
 
     public async Task<bool> CastVoteByNameAsync(string gameId, string voterId, string targetPlayerName)
     {
-        var game = await GetGameByIdAsync(gameId);
+        var game = await GetTrackedGameByIdAsync(gameId);
         if (game == null || game.State != GameState.Voting)
             return false;
 
@@ -372,7 +385,7 @@ public class GameService
 
     public async Task<bool> ResetGameForRematchAsync(string gameId)
     {
-        var game = await GetGameByIdAsync(gameId);
+        var game = await GetTrackedGameByIdAsync(gameId);
         if (game == null || game.State != GameState.Finished)
             return false;
 
