@@ -130,7 +130,12 @@ h1:focus {
 body {
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
     min-height: 100vh;
-    background-attachment: fixed;
+}
+
+@media (min-width: 769px) {
+    body {
+        background-attachment: fixed;
+    }
 }
 
 /* Home Page */
@@ -600,6 +605,7 @@ body {
     height: 200%;
     background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
     animation: pulse 3s ease-in-out infinite;
+    will-change: opacity, transform;
 }
 
 @keyframes pulse {
@@ -641,6 +647,7 @@ body {
     width: 200%;
     height: 200%;
     background: radial-gradient(circle, rgba(255,255,255,0.15) 0%, transparent 70%);
+    will-change: transform;
 }
 
 .secret-word {
