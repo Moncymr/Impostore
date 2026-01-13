@@ -75,6 +75,7 @@ Impostore è un gioco di deduzione sociale dove un giocatore è l'impostore che 
 - 🚀 **[Guida Rapida](GUIDA_RAPIDA.md)** - Inizia a giocare in 5 minuti! (con screenshot)
 - 📖 **[Manuale Utente Completo](MANUALE_UTENTE.md)** - Istruzioni dettagliate per ogni aspetto del gioco
 - 🎮 **[Regole del Gioco](GAME_RULES.md)** - Documentazione completa delle meccaniche di gioco
+- 🔧 **[Risoluzione Problemi Build](TROUBLESHOOTING_BUILD.md)** - Soluzioni per errori di compilazione e pubblicazione
 
 ## 🛠️ Installazione e Avvio
 
