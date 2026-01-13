@@ -26,6 +26,15 @@ public class GameHub : Hub
     public async Task JoinGameGroup(string gameId)
     {
         await Groups.AddToGroupAsync(Context.ConnectionId, gameId);
+        
+        // Notify all players in the group about the updated game state
+        // This ensures that when a player joins an already-started game,
+        // other players receive the connection update
+        var game = await _gameService.GetGameByIdAsync(gameId);
+        if (game != null && game.State != GameState.Lobby)
+        {
+            await Clients.Group(gameId).SendAsync("GameUpdated", game);
+        }
     }
     
     public async Task NotifyPlayerJoined(string gameId, string playerId, string nickname)
