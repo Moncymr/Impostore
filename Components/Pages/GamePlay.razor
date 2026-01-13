@@ -73,7 +73,21 @@
                     {
                         <div class="turn-section">
                             <h3>Fase Turni</h3>
-                            <p>È il turno di: <strong>@GetCurrentTurnPlayer()?.Nickname</strong></p>
+                            
+                            @* Highlight current turn player with a prominent alert *@
+                            @if (GetCurrentTurnPlayer()?.Id == currentPlayer?.Id)
+                            {
+                                <div class="alert alert-info alert-turn" role="alert">
+                                    <h4 class="alert-heading">🎯 È il tuo turno!</h4>
+                                    <p class="mb-0">Scrivi un messaggio con un indizio o passa il turno.</p>
+                                </div>
+                            }
+                            else
+                            {
+                                <div class="alert alert-secondary" role="alert">
+                                    <p class="mb-0">È il turno di: <strong>@GetCurrentTurnPlayer()?.Nickname</strong></p>
+                                </div>
+                            }
                             
                             @* Show pass button to current turn player *@
                             @if (GetCurrentTurnPlayer()?.Id == currentPlayer?.Id)
@@ -129,10 +143,13 @@
                     @if (game.State == GameState.Voting)
                     {
                         <div class="voting-section">
-                            <h3>🗳️ Votazione</h3>
+                            <h3>🗳️ Votazione in Corso</h3>
                             @if (!hasVoted)
                             {
-                                <p>Seleziona chi pensi sia l'impostore:</p>
+                                <div class="alert alert-warning" role="alert">
+                                    <h4 class="alert-heading">⚠️ È ora di votare!</h4>
+                                    <p class="mb-0">Seleziona chi pensi sia l'impostore:</p>
+                                </div>
                                 <div class="name-voting-select">
                                     <select class="form-select form-select-lg" 
                                             @bind="votePlayerName">
@@ -151,9 +168,13 @@
                             }
                             else
                             {
-                                <p class="voted-message">✓ Hai votato per: <strong>@votedPlayerName</strong></p>
-                                <p>In attesa degli altri...</p>
-                                <p>Voti ricevuti: @game.Votes.Count / @game.Players.Count(p => p.IsApproved)</p>
+                                <div class="alert alert-success" role="alert">
+                                    <h4 class="alert-heading">✓ Voto registrato!</h4>
+                                    <p class="mb-2">Hai votato per: <strong>@votedPlayerName</strong></p>
+                                    <hr>
+                                    <p class="mb-0"><small>Voti ricevuti: @game.Votes.Count / @game.Players.Count(p => p.IsApproved)</small></p>
+                                </div>
+                                <p class="text-center text-muted">In attesa degli altri giocatori...</p>
                             }
                         </div>
                     }
@@ -161,22 +182,26 @@
                     @if (game.State == GameState.Finished)
                     {
                         <div class="results-section">
-                            <h2>🏆 Partita Finita!</h2>
+                            <h2 class="text-center mb-4">🏆 Partita Terminata!</h2>
                             @if (game.ImpostorsWon)
                             {
                                 <div class="impostor-wins">
-                                    <h3>L'Impostore Ha Vinto!</h3>
-                                    <p>L'impostore era: <strong>@GetPlayerById(game.ImpostorId)?.Nickname</strong></p>
-                                    <p>La parola segreta era: <strong>@game.SecretWord</strong></p>
+                                    <h3>🎭 L'Impostore Ha Vinto!</h3>
+                                    <hr class="bg-white">
+                                    <p><strong>🕵️ Impostore:</strong> @GetPlayerById(game.ImpostorId)?.Nickname</p>
+                                    <p><strong>🔑 Parola segreta:</strong> @game.SecretWord</p>
+                                    <p class="mt-3"><em>L'impostore è riuscito a non farsi scoprire!</em></p>
                                 </div>
                             }
                             else
                             {
                                 <div class="players-win">
-                                    <h3>I Giocatori Hanno Vinto!</h3>
-                                    <p>L'impostore era: <strong>@GetPlayerById(game.ImpostorId)?.Nickname</strong></p>
-                                    <p>Giocatore più votato: <strong>@GetPlayerById(game.WinnerId)?.Nickname</strong></p>
-                                    <p>La parola segreta era: <strong>@game.SecretWord</strong></p>
+                                    <h3>🎉 I Giocatori Hanno Vinto!</h3>
+                                    <hr class="bg-white">
+                                    <p><strong>🕵️ Impostore scoperto:</strong> @GetPlayerById(game.ImpostorId)?.Nickname</p>
+                                    <p><strong>🗳️ Più votato:</strong> @GetPlayerById(game.WinnerId)?.Nickname</p>
+                                    <p><strong>🔑 Parola segreta:</strong> @game.SecretWord</p>
+                                    <p class="mt-3"><em>Ottimo lavoro nel trovare l'impostore!</em></p>
                                 </div>
                             }
                             
