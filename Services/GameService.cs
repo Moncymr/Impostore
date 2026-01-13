@@ -44,6 +44,7 @@ public class GameService
     public async Task<Game?> GetGameByCodeAsync(string code)
     {
         return await _context.Games
+            .AsNoTracking()
             .Include(g => g.Players)
             .Include(g => g.Messages)
             .Include(g => g.Votes)
@@ -53,6 +54,7 @@ public class GameService
     public async Task<Game?> GetGameByIdAsync(string gameId)
     {
         return await _context.Games
+            .AsNoTracking()
             .Include(g => g.Players)
             .Include(g => g.Messages)
             .Include(g => g.Votes)
