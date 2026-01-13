@@ -1,6 +1,6 @@
 @echo off
 REM Fix Build Script for Impostore Project
-REM This script fixes the "net10.0" target framework error
+REM This script fixes the "net8.0" target framework error
 
 echo ============================================
 echo Impostore Build Fix Script
@@ -47,11 +47,11 @@ echo ============================================
 echo Build fix complete!
 echo ============================================
 echo.
-echo If you still see the "net10.0" error:
+echo If you still see the "net8.0" error:
 echo 1. Open ImpostoreGame.csproj in Notepad
 echo 2. Find the line: ^<TargetFramework^>...^</TargetFramework^>
-echo 3. Ensure it says: ^<TargetFramework^>net8.0^</TargetFramework^>
-echo 4. If it says net10.0, change it to net8.0 and save
+echo 3. Ensure it says: ^<TargetFramework^>net10.0^</TargetFramework^>
+echo 4. If it says net8.0, change it to net10.0 and save
 echo 5. Run this script again
 echo.
 pause

@@ -13,10 +13,9 @@ Questo è il manuale utente completo per giocare a Impostore, il gioco di deduzi
 3. [Unirsi a una Partita](#unirsi-a-una-partita)
 4. [Come Giocare - Giocatore Normale](#come-giocare---giocatore-normale)
 5. [Come Giocare - Impostore](#come-giocare---impostore)
-6. [Chat Vocale Integrata](#chat-vocale-integrata)
-7. [Fasi di Gioco](#fasi-di-gioco)
-8. [Consigli e Strategie](#consigli-e-strategie)
-9. [Risoluzione Problemi](#risoluzione-problemi)
+6. [Fasi di Gioco](#fasi-di-gioco)
+7. [Consigli e Strategie](#consigli-e-strategie)
+8. [Risoluzione Problemi](#risoluzione-problemi)
 
 ---
 
@@ -25,7 +24,6 @@ Questo è il manuale utente completo per giocare a Impostore, il gioco di deduzi
 ### Requisiti
 - Un browser moderno (Chrome, Firefox, Safari, Edge)
 - Connessione internet
-- Microfono (opzionale, per la chat vocale)
 
 ### Primo Accesso
 1. Apri l'applicazione nel tuo browser
@@ -199,47 +197,6 @@ Durante la **Fase Turni**:
 
 ---
 
-## 🎤 Chat Vocale Integrata
-
-### Attivare la Chat Vocale
-1. Durante la partita (dopo che è iniziata), troverai il **pannello Chat Vocale** nella sidebar destra
-2. Clicca sul pulsante **"📞 Connetti"**
-3. Il browser chiederà il **permesso di accedere al microfono**
-4. Clicca **"Consenti"** per attivare la chat vocale
-
-![Chat Vocale - Pannello](screenshots/voice-chat-panel.png)
-
-### Usare la Chat Vocale
-- **🎤 Attivo**: Il tuo microfono è acceso, gli altri ti sentono
-- **🔇 Muto**: Il tuo microfono è disattivato, gli altri NON ti sentono
-- Clicca il pulsante per **alternare** tra muto e attivo
-
-### Partecipanti Vocali
-- Nella sezione **"Partecipanti Vocali"** vedi chi è connesso
-- **🔊**: Il giocatore sta parlando
-- **🔇**: Il giocatore è in silenzio o muto
-- **Badge "Muto"**: Il giocatore ha il microfono disattivato
-
-> **Nota**: Screenshot della chat vocale attiva sarà aggiunto in un prossimo aggiornamento.
-
-### Disconnettersi
-- Clicca **"📵 Disconnetti"** per uscire dalla chat vocale
-- Puoi riconnetterti in qualsiasi momento
-
-### Consigli per la Chat Vocale
-✅ **Buone pratiche**:
-- Usa la chat vocale per **discussioni più naturali**
-- Attiva il **muto** quando non stai parlando (riduce rumori di fondo)
-- Sii **rispettoso** con gli altri giocatori
-- Durante i turni, puoi usare sia **chat testuale** che **chat vocale**
-
-⚠️ **Attenzione**:
-- La chat vocale funziona meglio con **connessioni internet stabili**
-- Se hai problemi, prova a **disconnettere e riconnettere**
-- Verifica che il **microfono sia abilitato** nelle impostazioni del browser
-
-> **Nota**: Screenshot della chat vocale attiva con partecipanti sarà aggiunto in un prossimo aggiornamento.
-
 ---
 
 ## 📊 Fasi di Gioco
@@ -276,9 +233,8 @@ Durante la **Fase Turni**:
 
 ### Per Tutti i Giocatori
 1. **Osserva attentamente**: Chi dà indizi vaghi? Chi si contraddice?
-2. **Usa la chat vocale**: Più naturale per le discussioni
-3. **Non avere fretta**: Prenditi il tempo necessario per capire
-4. **Divertiti**: È un gioco sociale, l'obiettivo è divertirsi insieme!
+2. **Non avere fretta**: Prenditi il tempo necessario per capire
+3. **Divertiti**: È un gioco sociale, l'obiettivo è divertirsi insieme!
 
 ### Per i Giocatori Normali
 1. **Collabora senza rivelare troppo**: Indizi chiari ma non ovvi
@@ -304,29 +260,6 @@ Durante la **Fase Turni**:
 - **Verifica lo stato**: Controlla che la partita sia nella fase giusta (InProgress o Voting)
 - **Aspetta il tuo turno**: Durante la fase turni, puoi scrivere in qualsiasi momento (chat sempre attiva)
 - **Aggiorna**: Se il problema persiste, ricarica la pagina
-
-### Chat vocale non funziona
-- **Permessi microfono**: Verifica che il browser abbia i permessi per accedere al microfono
-- **Controlla le impostazioni**: Vai nelle impostazioni del browser → Privacy → Microfono
-- **Riconnettiti**: Disconnettiti e riconnettiti alla chat vocale
-- **Browser supportato**: Usa Chrome, Firefox, Safari o Edge (versioni recenti)
-
-### Permessi Microfono per Browser
-
-#### Chrome/Edge
-1. Clicca sull'icona 🔒 nella barra degli indirizzi
-2. Vai su "Impostazioni sito"
-3. Trova "Microfono" e seleziona "Consenti"
-
-#### Firefox
-1. Clicca sull'icona 🔒 nella barra degli indirizzi
-2. Clicca su "Permessi"
-3. Trova "Usa il microfono" e seleziona "Consenti"
-
-#### Safari
-1. Menu Safari → Impostazioni
-2. Tab "Siti web"
-3. Seleziona "Microfono" e consenti per il sito
 
 ### La partita si è bloccata
 - **Aggiorna la pagina**: SignalR gestirà la riconnessione automatica
@@ -357,5 +290,5 @@ Per problemi, domande o suggerimenti:
 - Apri un **issue** su GitHub
 - Contatta gli sviluppatori del progetto
 
-**Versione**: 1.1.0 (con Chat Vocale Integrata)  
+**Versione**: 1.2.0  
 **Ultimo aggiornamento**: Gennaio 2026

@@ -43,9 +43,6 @@ Impostore è un gioco di deduzione sociale dove un giocatore è l'impostore che 
 - ✅ Chat realtime con SignalR
 - ✅ Messaggi di sistema
 - ✅ Timestamp sui messaggi
-- ✅ **Chat vocale integrata con WebRTC** 🎤
-- ✅ **Controlli mute/unmute**
-- ✅ **Indicatori di chi sta parlando**
 
 ### 6. UI/UX
 - ✅ Design responsive (desktop + mobile)
@@ -63,10 +60,9 @@ Impostore è un gioco di deduzione sociale dove un giocatore è l'impostore che 
    - L'Impostore: NON conosce la parola
    - Altri giocatori: Conoscono la parola segreta
 6. **Fase Turni**: I giocatori parlano a turno, dando indizi senza rivelare troppo
-7. **Chat Vocale** (opzionale): Clicca "Connetti" per parlare con gli altri giocatori 🎤
-8. **Fase Discussione**: Tutti possono parlare liberamente
-9. **Votazione**: Tutti votano chi pensano sia l'impostore
-10. **Risultati**: 
+7. **Fase Discussione**: Tutti possono parlare liberamente
+8. **Votazione**: Tutti votano chi pensano sia l'impostore
+9. **Risultati**: 
     - Se l'impostore è quello più votato → I giocatori vincono!
     - Altrimenti → L'impostore vince!
 
@@ -161,7 +157,6 @@ az webapp up --name impostore-game --resource-group myResourceGroup
 - **Database In-Memory**: I dati non persistono al riavvio (ideale per giochi veloci)
 - **SignalR**: Gestisce la comunicazione realtime tra giocatori
 - **Blazor Server**: Renderizzazione lato server con aggiornamenti in tempo reale
-- **WebRTC**: Chat vocale peer-to-peer integrata
 - **Nessuna autenticazione complessa**: Solo nickname per facilità d'uso
 
 ## 🔮 Possibili Miglioramenti Futuri
@@ -172,9 +167,8 @@ az webapp up --name impostore-game --resource-group myResourceGroup
 - [ ] Statistiche giocatori
 - [ ] Stanze private con password
 - [ ] Modalità spettatore
-- [x] Chat vocale integrata ✅
+- [ ] Chat vocale integrata
 - [ ] Personalizzazione avatar
-- [ ] Peer-to-peer voice routing per migliori prestazioni
 
 ## 📄 Licenza
 

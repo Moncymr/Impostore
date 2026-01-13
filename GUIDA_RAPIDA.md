@@ -81,17 +81,6 @@ Una guida veloce per iniziare a giocare a Impostore in pochi minuti!
 
 ---
 
-### 4️⃣ Chat Vocale (Opzionale)
-
-![Chat Vocale](screenshots/voice-chat-panel.png)
-
-1. Clicca "📞 Connetti"
-2. Permetti l'accesso al microfono
-3. Parla con gli altri giocatori in tempo reale!
-4. Clicca il microfono per attivare/disattivare
-
----
-
 ## 🎯 Fasi di Gioco
 
 1. **Lobby** → Attesa giocatori
@@ -105,7 +94,6 @@ Una guida veloce per iniziare a giocare a Impostore in pochi minuti!
 ## 💡 Consigli Rapidi
 
 ### Per Tutti
-- 🎤 Usa la chat vocale per discussioni naturali
 - 👀 Osserva attentamente gli indizi degli altri
 - 🤔 Non avere fretta di votare
 
@@ -127,7 +115,6 @@ Per istruzioni dettagliate, consulta il **[Manuale Utente Completo](MANUALE_UTEN
 - Spiegazioni dettagliate di ogni fase
 - Strategie avanzate
 - Risoluzione problemi
-- Configurazione chat vocale
 - E molto altro!
 
 ---
