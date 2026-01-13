@@ -12,6 +12,8 @@ a, .btn-link {
     border-color: #1861ac;
     box-shadow: 0 2px 8px rgba(27, 110, 194, 0.3);
     transition: all 0.3s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .btn-primary:hover {
@@ -29,6 +31,8 @@ a, .btn-link {
     border-color: #20863a;
     box-shadow: 0 2px 8px rgba(40, 167, 69, 0.3);
     transition: all 0.3s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .btn-success:hover {
@@ -46,6 +50,8 @@ a, .btn-link {
     border-color: #c82333;
     box-shadow: 0 2px 8px rgba(220, 53, 69, 0.3);
     transition: all 0.3s ease;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 .btn-danger:hover {
@@ -226,6 +232,9 @@ body {
     font-size: 1.1rem;
     border-radius: 10px;
     transition: all 0.3s ease;
+    touch-action: manipulation; /* Prevents double-tap zoom on mobile */
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent; /* Removes tap highlight on iOS */
 }
 
 .button-group .btn:hover {
@@ -311,6 +320,8 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 44px;
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: transparent;
 }
 
 @media (max-width: 768px) {

@@ -31,7 +31,8 @@
                     }
                 </div>
                 
-                <button class="btn btn-primary btn-lg mt-3" 
+                <button type="button" 
+                        class="btn btn-primary btn-lg mt-3" 
                         @onclick="SetNickname"
                         disabled="@isButtonDisabled">
                     Continua
@@ -51,7 +52,7 @@
                                @bind:event="oninput"
                                placeholder="Password per creare partita..."
                                maxlength="20" />
-                        <button class="btn btn-success btn-lg" @onclick="CreateGame">
+                        <button type="button" class="btn btn-success btn-lg" @onclick="CreateGame">
                             🎮 Crea Partita
                         </button>
                     </div>
@@ -65,7 +66,8 @@
                                @bind:event="oninput"
                                placeholder="Codice partita..."
                                maxlength="6" />
-                        <button class="btn btn-primary btn-lg mt-2" 
+                        <button type="button" 
+                                class="btn btn-primary btn-lg mt-2" 
                                 @onclick="JoinGame"
                                 disabled="@(string.IsNullOrWhiteSpace(gameCode))">
                             🚪 Unisciti alla Partita
