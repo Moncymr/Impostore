@@ -19,6 +19,7 @@
                        value="@inputNickname"
                        placeholder="Il tuo nickname..."
                        maxlength="20" />
+                <small class="text-muted">@inputNickname.Length / 20 caratteri</small>
                 
                 <h3 class="mt-4">Scegli il tuo avatar</h3>
                 <div class="avatar-selection">
@@ -43,16 +44,21 @@
         else
         {
             <div class="action-section">
-                <p class="welcome-text">Benvenuto condomio de Amicis!!</p>
+                <p class="welcome-text">Benvenuto condomino de Amicis!</p>
                 
                 <div class="button-group">
                     <div class="create-game-section">
-                        <input type="password" 
-                               class="form-control mb-2" 
-                               @bind="password" 
-                               @bind:event="oninput"
-                               placeholder="Password per creare partita..."
-                               maxlength="20" />
+                        <div class="input-group mb-2">
+                            <input type="@(showPassword ? "text" : "password")" 
+                                   class="form-control" 
+                                   @bind="password" 
+                                   @bind:event="oninput"
+                                   placeholder="Password per creare partita..."
+                                   maxlength="20" />
+                            <button class="btn btn-outline-secondary" type="button" @onclick="TogglePasswordVisibility">
+                                @(showPassword ? "🙈" : "👁️")
+                            </button>
+                        </div>
                         <button type="button" class="btn btn-success btn-lg" @onclick="CreateGame">
                             🎮 Crea Partita
                         </button>
@@ -62,11 +68,12 @@
                     
                     <div class="join-game">
                         <input type="text" 
-                               class="form-control" 
+                               class="form-control text-uppercase" 
                                @bind="gameCode" 
                                @bind:event="oninput"
                                placeholder="Codice partita..."
-                               maxlength="6" />
+                               maxlength="6" 
+                               style="text-transform: uppercase;" />
                         <button type="button" 
                                 class="btn btn-primary btn-lg mt-2" 
                                 @onclick="JoinGame"
@@ -78,7 +85,9 @@
 
                 @if (!string.IsNullOrEmpty(errorMessage))
                 {
-                    <div class="alert alert-danger mt-3">@errorMessage</div>
+                    <div class="alert alert-danger mt-3" role="alert">
+                        <strong>⚠️ Attenzione!</strong> @errorMessage
+                    </div>
                 }
             </div>
         }
@@ -107,6 +116,7 @@
     private string errorMessage = "";
     private string selectedAvatar = "😀";
     private bool isButtonDisabled = true;
+    private bool showPassword = false;
     
     private readonly List<string> availableAvatars = new()
     {
@@ -142,6 +152,11 @@
     private void SelectAvatar(string avatar)
     {
         selectedAvatar = avatar;
+    }
+    
+    private void TogglePasswordVisibility()
+    {
+        showPassword = !showPassword;
     }
 
     private void SetNickname()
