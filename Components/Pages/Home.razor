@@ -24,7 +24,8 @@
                 <div class="avatar-selection">
                     @foreach (var avatarOption in availableAvatars)
                     {
-                        <button class="avatar-option @(selectedAvatar == avatarOption ? "selected" : "")" 
+                        <button type="button" 
+                                class="avatar-option @(selectedAvatar == avatarOption ? "selected" : "")" 
                                 @onclick="() => SelectAvatar(avatarOption)">
                             @avatarOption
                         </button>
