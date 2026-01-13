@@ -14,7 +14,7 @@ Your error shows: `Assets file doesn't have a target for 'net10.0'`
 
 ### Step 1: Open Your Project File
 
-1. Navigate to: `C:\ESEMPIO\impostore\`
+1. Navigate to your project directory (e.g., `C:\path\to\Impostore\`)
 2. Right-click on `ImpostoreGame.csproj`
 3. Select "Open with" → **Notepad** (or any text editor)
 
@@ -50,10 +50,15 @@ Look for this section in the file:
 
 ### Step 5: Clean Everything
 
-**Close Visual Studio completely**, then delete these folders:
-- `C:\ESEMPIO\impostore\bin` (entire folder)
-- `C:\ESEMPIO\impostore\obj` (entire folder)
-- `C:\ESEMPIO\impostore\.vs` (entire folder - may be hidden)
+**Close Visual Studio completely**, then delete these folders from your project directory:
+- `bin\` (entire folder)
+- `obj\` (entire folder)
+- `.vs\` (entire folder - may be hidden)
+
+Example locations if your project is at `C:\MyProjects\Impostore\`:
+- `C:\MyProjects\Impostore\bin`
+- `C:\MyProjects\Impostore\obj`
+- `C:\MyProjects\Impostore\.vs`
 
 ### Step 6: Rebuild
 
