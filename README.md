@@ -2,6 +2,18 @@
 
 Un'applicazione web gratuita per giocare al gioco "Impostore" (simile a Spyfall) in tempo reale con amici.
 
+---
+
+## ⚠️ ERRORE DI BUILD "net10.0"?
+
+Se ottieni l'errore: `Assets file doesn't have a target for 'net10.0'`
+
+👉 **[LEGGI QUESTA GUIDA URGENTE](URGENT_FIX.md)** 👈
+
+Il tuo file di progetto locale è stato modificato per errore. La guida ti mostra come correggere.
+
+---
+
 ## 📋 Descrizione
 
 Impostore è un gioco di deduzione sociale dove un giocatore è l'impostore che non conosce la parola segreta, mentre tutti gli altri la conoscono. I giocatori devono discutere e votare per scoprire chi è l'impostore.
