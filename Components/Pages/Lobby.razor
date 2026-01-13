@@ -319,14 +319,22 @@
     {
         if (game != null)
         {
-            await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", game.Code);
-            codeCopied = true;
-            StateHasChanged();
-            
-            // Reset the "copied" message after 2 seconds
-            await Task.Delay(2000);
-            codeCopied = false;
-            StateHasChanged();
+            try
+            {
+                await JSRuntime.InvokeVoidAsync("navigator.clipboard.writeText", game.Code);
+                codeCopied = true;
+                StateHasChanged();
+                
+                // Reset the "copied" message after 2 seconds
+                await Task.Delay(2000);
+                codeCopied = false;
+                StateHasChanged();
+            }
+            catch
+            {
+                // Clipboard API not available or permission denied - silently fail
+                // The user can still manually copy the code
+            }
         }
     }
 
