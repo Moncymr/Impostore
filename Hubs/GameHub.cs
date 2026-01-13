@@ -134,9 +134,7 @@ public class GameHub : Hub
             await Clients.Group(gameId).SendAsync("GameStarted", game);
             
             // Add and broadcast system message
-            await _gameService.AddSystemMessageAsync(gameId, "La partita è iniziata!");
-            var gameWithStartMsg = await _gameService.GetGameByIdAsync(gameId);
-            var startMessage = gameWithStartMsg?.Messages.LastOrDefault();
+            var startMessage = await _gameService.AddSystemMessageAsync(gameId, "La partita è iniziata!");
             if (startMessage != null)
             {
                 await Clients.Group(gameId).SendAsync("ReceiveMessage", startMessage);
@@ -149,9 +147,7 @@ public class GameHub : Hub
                 await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
                 
                 // Add and broadcast turn notification message
-                await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
-                var gameWithTurnMsg = await _gameService.GetGameByIdAsync(gameId);
-                var turnMessage = gameWithTurnMsg?.Messages.LastOrDefault();
+                var turnMessage = await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
                 if (turnMessage != null)
                 {
                     await Clients.Group(gameId).SendAsync("ReceiveMessage", turnMessage);
@@ -202,9 +198,7 @@ public class GameHub : Hub
                 if (game.CurrentTurnIndex >= approvedPlayers.Count)
                 {
                     // All players have had their turn and everyone is ready
-                    await _gameService.AddSystemMessageAsync(gameId, "Tutti pronti! La votazione inizierà presto...");
-                    var gameWithMsg = await _gameService.GetGameByIdAsync(gameId);
-                    var message = gameWithMsg?.Messages.LastOrDefault();
+                    var message = await _gameService.AddSystemMessageAsync(gameId, "Tutti pronti! La votazione inizierà presto...");
                     if (message != null)
                     {
                         await Clients.Group(gameId).SendAsync("ReceiveMessage", message);
@@ -222,9 +216,7 @@ public class GameHub : Hub
                             var allHadTurn = approvedPlayers.Any(p => p.IsReadyToVote);
                             if (allHadTurn)
                             {
-                                await _gameService.AddSystemMessageAsync(gameId, "Nuovo giro di turni! Non tutti sono pronti a votare.");
-                                var gameWithCycleMsg = await _gameService.GetGameByIdAsync(gameId);
-                                var cycleMessage = gameWithCycleMsg?.Messages.LastOrDefault();
+                                var cycleMessage = await _gameService.AddSystemMessageAsync(gameId, "Nuovo giro di turni! Non tutti sono pronti a votare.");
                                 if (cycleMessage != null)
                                 {
                                     await Clients.Group(gameId).SendAsync("ReceiveMessage", cycleMessage);
@@ -236,9 +228,7 @@ public class GameHub : Hub
                         await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
                         
                         // Add and broadcast turn notification message
-                        await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
-                        var gameWithTurnMsg = await _gameService.GetGameByIdAsync(gameId);
-                        var turnMessage = gameWithTurnMsg?.Messages.LastOrDefault();
+                        var turnMessage = await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
                         if (turnMessage != null)
                         {
                             await Clients.Group(gameId).SendAsync("ReceiveMessage", turnMessage);
@@ -262,9 +252,7 @@ public class GameHub : Hub
             await Clients.Group(gameId).SendAsync("VotingStarted", game);
             
             // Add and broadcast system message
-            await _gameService.AddSystemMessageAsync(gameId, "Fase di votazione iniziata!");
-            var gameWithMsg = await _gameService.GetGameByIdAsync(gameId);
-            var message = gameWithMsg?.Messages.LastOrDefault();
+            var message = await _gameService.AddSystemMessageAsync(gameId, "Fase di votazione iniziata!");
             if (message != null)
             {
                 await Clients.Group(gameId).SendAsync("ReceiveMessage", message);
@@ -312,9 +300,7 @@ public class GameHub : Hub
             }
             
             // Add and broadcast system message
-            await _gameService.AddSystemMessageAsync(gameId, resultMessage);
-            var gameWithMsg = await _gameService.GetGameByIdAsync(gameId);
-            var message = gameWithMsg?.Messages.LastOrDefault();
+            var message = await _gameService.AddSystemMessageAsync(gameId, resultMessage);
             if (message != null)
             {
                 await Clients.Group(gameId).SendAsync("ReceiveMessage", message);
@@ -377,9 +363,7 @@ public class GameHub : Hub
                 await Clients.Group(gameId).SendAsync("RematchStarted", game);
                 
                 // Add and broadcast system message
-                await _gameService.AddSystemMessageAsync(gameId, "Nuova partita iniziata!");
-                var gameWithStartMsg = await _gameService.GetGameByIdAsync(gameId);
-                var startMessage = gameWithStartMsg?.Messages.LastOrDefault();
+                var startMessage = await _gameService.AddSystemMessageAsync(gameId, "Nuova partita iniziata!");
                 if (startMessage != null)
                 {
                     await Clients.Group(gameId).SendAsync("ReceiveMessage", startMessage);
@@ -395,9 +379,7 @@ public class GameHub : Hub
                         await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
                         
                         // Add and broadcast turn notification message
-                        await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
-                        var gameWithTurnMsg = await _gameService.GetGameByIdAsync(gameId);
-                        var turnMessage = gameWithTurnMsg?.Messages.LastOrDefault();
+                        var turnMessage = await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
                         if (turnMessage != null)
                         {
                             await Clients.Group(gameId).SendAsync("ReceiveMessage", turnMessage);

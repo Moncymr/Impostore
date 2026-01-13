@@ -202,11 +202,11 @@ public class GameService
         return true;
     }
 
-    public async Task<bool> AddSystemMessageAsync(string gameId, string message)
+    public async Task<ChatMessage?> AddSystemMessageAsync(string gameId, string message)
     {
         var game = await GetTrackedGameByIdAsync(gameId);
         if (game == null)
-            return false;
+            return null;
 
         var chatMessage = new ChatMessage
         {
@@ -220,7 +220,7 @@ public class GameService
         game.Messages.Add(chatMessage);
         await _context.SaveChangesAsync();
 
-        return true;
+        return chatMessage;
     }
 
     public async Task<bool> MoveToNextTurnAsync(string gameId)
