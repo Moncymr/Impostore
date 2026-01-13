@@ -140,9 +140,7 @@ public class GameService
     public async Task<bool> StartGameAsync(string gameId)
     {
         // Use a tracked query to properly update the game state
-        var game = await _context.Games
-            .Include(g => g.Players)
-            .FirstOrDefaultAsync(g => g.Id == gameId);
+        var game = await GetTrackedGameByIdAsync(gameId);
             
         if (game == null || game.State != GameState.Lobby)
             return false;
