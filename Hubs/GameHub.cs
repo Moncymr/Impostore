@@ -82,7 +82,7 @@ public class GameHub : Hub
         {
             await NotifyHostAboutPlayerJoin(game, game.Id, player);
             
-            // Send updated game state to ALL players so everyone sees the complete player list
+            // Refresh game state to include the newly added player and send to all players
             var updatedGame = await _gameService.GetGameByIdAsync(game.Id);
             if (updatedGame != null)
             {
