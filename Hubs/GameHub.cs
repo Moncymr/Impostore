@@ -132,14 +132,30 @@ public class GameHub : Hub
         {
             var game = await _gameService.GetGameByIdAsync(gameId);
             await Clients.Group(gameId).SendAsync("GameStarted", game);
+            
+            // Add and broadcast system message
             await _gameService.AddSystemMessageAsync(gameId, "La partita è iniziata!");
+            var gameWithStartMsg = await _gameService.GetGameByIdAsync(gameId);
+            var startMessage = gameWithStartMsg?.Messages.LastOrDefault();
+            if (startMessage != null)
+            {
+                await Clients.Group(gameId).SendAsync("ReceiveMessage", startMessage);
+            }
             
             // Notify all players about whose turn it is
             var currentTurnPlayer = game?.Players.Where(p => p.IsApproved).ToList().ElementAtOrDefault(game.CurrentTurnIndex);
             if (currentTurnPlayer != null)
             {
                 await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
+                
+                // Add and broadcast turn notification message
                 await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
+                var gameWithTurnMsg = await _gameService.GetGameByIdAsync(gameId);
+                var turnMessage = gameWithTurnMsg?.Messages.LastOrDefault();
+                if (turnMessage != null)
+                {
+                    await Clients.Group(gameId).SendAsync("ReceiveMessage", turnMessage);
+                }
             }
         }
     }
@@ -178,7 +194,6 @@ public class GameHub : Hub
         if (success)
         {
             var game = await _gameService.GetGameByIdAsync(gameId);
-            await Clients.Group(gameId).SendAsync("GameUpdated", game);
             
             if (game?.State == GameState.InProgress)
             {
@@ -188,6 +203,12 @@ public class GameHub : Hub
                 {
                     // All players have had their turn and everyone is ready
                     await _gameService.AddSystemMessageAsync(gameId, "Tutti pronti! La votazione inizierà presto...");
+                    var gameWithMsg = await _gameService.GetGameByIdAsync(gameId);
+                    var message = gameWithMsg?.Messages.LastOrDefault();
+                    if (message != null)
+                    {
+                        await Clients.Group(gameId).SendAsync("ReceiveMessage", message);
+                    }
                 }
                 else
                 {
@@ -202,14 +223,33 @@ public class GameHub : Hub
                             if (allHadTurn)
                             {
                                 await _gameService.AddSystemMessageAsync(gameId, "Nuovo giro di turni! Non tutti sono pronti a votare.");
+                                var gameWithCycleMsg = await _gameService.GetGameByIdAsync(gameId);
+                                var cycleMessage = gameWithCycleMsg?.Messages.LastOrDefault();
+                                if (cycleMessage != null)
+                                {
+                                    await Clients.Group(gameId).SendAsync("ReceiveMessage", cycleMessage);
+                                }
                             }
                         }
                         
+                        // Notify about turn change
                         await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
+                        
+                        // Add and broadcast turn notification message
                         await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
+                        var gameWithTurnMsg = await _gameService.GetGameByIdAsync(gameId);
+                        var turnMessage = gameWithTurnMsg?.Messages.LastOrDefault();
+                        if (turnMessage != null)
+                        {
+                            await Clients.Group(gameId).SendAsync("ReceiveMessage", turnMessage);
+                        }
                     }
                 }
             }
+            
+            // Send updated game state after all messages have been added
+            var updatedGame = await _gameService.GetGameByIdAsync(gameId);
+            await Clients.Group(gameId).SendAsync("GameUpdated", updatedGame);
         }
     }
 
@@ -220,7 +260,15 @@ public class GameHub : Hub
         {
             var game = await _gameService.GetGameByIdAsync(gameId);
             await Clients.Group(gameId).SendAsync("VotingStarted", game);
+            
+            // Add and broadcast system message
             await _gameService.AddSystemMessageAsync(gameId, "Fase di votazione iniziata!");
+            var gameWithMsg = await _gameService.GetGameByIdAsync(gameId);
+            var message = gameWithMsg?.Messages.LastOrDefault();
+            if (message != null)
+            {
+                await Clients.Group(gameId).SendAsync("ReceiveMessage", message);
+            }
         }
     }
 
@@ -253,13 +301,23 @@ public class GameHub : Hub
             var winner = game?.Players.FirstOrDefault(p => p.Id == game.WinnerId);
             var impostor = game?.Players.FirstOrDefault(p => p.Id == game.ImpostorId);
             
+            string resultMessage;
             if (game?.ImpostorsWon == true)
             {
-                await _gameService.AddSystemMessageAsync(gameId, $"L'impostore {impostor?.Nickname ?? "sconosciuto"} ha vinto! La parola era: {game.SecretWord ?? "sconosciuta"}");
+                resultMessage = $"L'impostore {impostor?.Nickname ?? "sconosciuto"} ha vinto! La parola era: {game.SecretWord ?? "sconosciuta"}";
             }
             else
             {
-                await _gameService.AddSystemMessageAsync(gameId, $"I giocatori hanno vinto! L'impostore era {impostor?.Nickname ?? "sconosciuto"}. La parola era: {game.SecretWord ?? "sconosciuta"}");
+                resultMessage = $"I giocatori hanno vinto! L'impostore era {impostor?.Nickname ?? "sconosciuto"}. La parola era: {game.SecretWord ?? "sconosciuta"}";
+            }
+            
+            // Add and broadcast system message
+            await _gameService.AddSystemMessageAsync(gameId, resultMessage);
+            var gameWithMsg = await _gameService.GetGameByIdAsync(gameId);
+            var message = gameWithMsg?.Messages.LastOrDefault();
+            if (message != null)
+            {
+                await Clients.Group(gameId).SendAsync("ReceiveMessage", message);
             }
         }
     }
@@ -317,7 +375,15 @@ public class GameHub : Hub
             {
                 var game = await _gameService.GetGameByIdAsync(gameId);
                 await Clients.Group(gameId).SendAsync("RematchStarted", game);
+                
+                // Add and broadcast system message
                 await _gameService.AddSystemMessageAsync(gameId, "Nuova partita iniziata!");
+                var gameWithStartMsg = await _gameService.GetGameByIdAsync(gameId);
+                var startMessage = gameWithStartMsg?.Messages.LastOrDefault();
+                if (startMessage != null)
+                {
+                    await Clients.Group(gameId).SendAsync("ReceiveMessage", startMessage);
+                }
                 
                 // Notify all players about whose turn it is
                 if (game != null)
@@ -327,7 +393,15 @@ public class GameHub : Hub
                     if (currentTurnPlayer != null)
                     {
                         await Clients.Group(gameId).SendAsync("TurnChanged", currentTurnPlayer.Id, currentTurnPlayer.Nickname);
+                        
+                        // Add and broadcast turn notification message
                         await _gameService.AddSystemMessageAsync(gameId, $"È il turno di {currentTurnPlayer.Nickname}!");
+                        var gameWithTurnMsg = await _gameService.GetGameByIdAsync(gameId);
+                        var turnMessage = gameWithTurnMsg?.Messages.LastOrDefault();
+                        if (turnMessage != null)
+                        {
+                            await Clients.Group(gameId).SendAsync("ReceiveMessage", turnMessage);
+                        }
                     }
                 }
             }
