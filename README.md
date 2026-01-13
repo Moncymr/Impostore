@@ -70,7 +70,11 @@ Impostore è un gioco di deduzione sociale dove un giocatore è l'impostore che 
     - Se l'impostore è quello più votato → I giocatori vincono!
     - Altrimenti → L'impostore vince!
 
-📖 **Per istruzioni dettagliate, consulta il [Manuale Utente](MANUALE_UTENTE.md)**
+## 📚 Documentazione
+
+- 🚀 **[Guida Rapida](GUIDA_RAPIDA.md)** - Inizia a giocare in 5 minuti! (con screenshot)
+- 📖 **[Manuale Utente Completo](MANUALE_UTENTE.md)** - Istruzioni dettagliate per ogni aspetto del gioco
+- 🎮 **[Regole del Gioco](GAME_RULES.md)** - Documentazione completa delle meccaniche di gioco
 
 ## 🛠️ Installazione e Avvio
 

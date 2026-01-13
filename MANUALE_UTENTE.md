@@ -135,7 +135,7 @@ Durante la **Fase Turni**:
 ### Vittoria
 🎉 **Vinci se**: L'impostore è il giocatore più votato!
 
-![Giocatore Normale - Vittoria](screenshots/player-normal-victory.png)
+> **Nota**: Screenshot della vittoria sarà aggiunto in un prossimo aggiornamento.
 
 ---
 
@@ -195,7 +195,7 @@ Durante la **Fase Turni**:
 ### Vittoria
 🎭 **Vinci se**: NON sei il giocatore più votato!
 
-![Impostore - Vittoria](screenshots/impostor-victory.png)
+> **Nota**: Screenshot della vittoria sarà aggiunto in un prossimo aggiornamento.
 
 ---
 
@@ -220,6 +220,8 @@ Durante la **Fase Turni**:
 - **🔇**: Il giocatore è in silenzio o muto
 - **Badge "Muto"**: Il giocatore ha il microfono disattivato
 
+> **Nota**: Screenshot della chat vocale attiva sarà aggiunto in un prossimo aggiornamento.
+
 ### Disconnettersi
 - Clicca **"📵 Disconnetti"** per uscire dalla chat vocale
 - Puoi riconnetterti in qualsiasi momento
@@ -236,7 +238,7 @@ Durante la **Fase Turni**:
 - Se hai problemi, prova a **disconnettere e riconnettere**
 - Verifica che il **microfono sia abilitato** nelle impostazioni del browser
 
-![Chat Vocale - Attiva](screenshots/voice-chat-active.png)
+> **Nota**: Screenshot della chat vocale attiva con partecipanti sarà aggiunto in un prossimo aggiornamento.
 
 ---
 
