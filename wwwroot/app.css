@@ -1030,8 +1030,16 @@ body {
         min-height: 300px;
     }
     
+    /* Move chat input to top on mobile for better keyboard accessibility */
+    .chat-input {
+        order: -1; /* Move input above messages */
+        border-top: none;
+        border-bottom: 2px solid #e9ecef;
+    }
+    
     .chat-messages {
         max-height: 250px;
+        order: 1; /* Messages come after input */
     }
     
     .players-sidebar {
