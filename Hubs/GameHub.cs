@@ -131,7 +131,10 @@ public class GameHub : Hub
         if (success)
         {
             var game = await _gameService.GetGameByIdAsync(gameId);
-            await Clients.Group(gameId).SendAsync("GameStarted", game);
+            // Explicitly send to caller (host) first to ensure they receive the event
+            await Clients.Caller.SendAsync("GameStarted", game);
+            // Then send to others in the group
+            await Clients.OthersInGroup(gameId).SendAsync("GameStarted", game);
             
             // Add and broadcast system message
             var startMessage = await _gameService.AddSystemMessageAsync(gameId, "La partita è iniziata!");
